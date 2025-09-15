@@ -34,14 +34,17 @@
             <td class="p-3">{{ $sub->location }}</td>
             <td class="p-3">{{ $sub->name_event }}</td>
             <td class="p-3 space-y-1">
-              @if($sub->appl_letter)
-              <a href="{{ asset('storage/' . $sub->appl_letter) }}" class="text-blue-600 underline block">📄 Surat</a>
+              @if($sub->file)
+              <a href="{{ asset('storage/' . $sub->file) }}" class="text-blue-600 underline block">📄 File Proposal</a>
               @endif
-              @if($sub->actv_letter)
-              <a href="{{ asset('storage/' . $sub->actv_letter) }}" class="text-blue-600 underline block">📑 Proposal</a>
+              @if($sub->appl_letter)
+              <a href="{{ asset('storage/' . $sub->appl_letter) }}" class="text-blue-600 underline block">📑 File Pengajuan</a>
               @endif
               @if($sub->ktp)
-              <a href="{{ asset('storage/' . $sub->ktp) }}" class="text-blue-600 underline block">🆔 KTP</a>
+              <a href="{{ asset('storage/' . $sub->ktp) }}" class="text-blue-600 underline block">🆔 File KTP</a>
+              @endif
+              @if($sub->actv_letter)
+              <a href="{{ asset('storage/' . $sub->actv_letter) }}" class="text-blue-600 underline block">📑 File Kegiatan / Rundown</a>
               @endif
             </td>
             <td class="p-3 text-center font-semibold">
@@ -136,16 +139,32 @@
   </div>
 </section>
 
-@if(session('success'))
 <script>
-  Swal.fire({
-    title: "Berhasil!",
-    text: "{{ session('success') }}",
-    icon: "success",
-    confirmButtonColor: "#3085d6"
-  });
+    window.addEventListener('pageshow', function (event) {
+            if (event.persisted || window.performance.getEntriesByType("navigation")[0]?.type === "back_forward") {
+                // Jangan jalankan apa-apa jika halaman dari cache
+                return;
+            }
+
+            @if(session('error'))
+            Swal.fire({
+                title: "Gagal!",
+                text: @json(session('error')),
+                icon: "error",
+                confirmButtonColor: "#d33"
+            });
+            @endif
+
+            @if(session('success'))
+            Swal.fire({
+                title: "Berhasil!",
+                text: @json(session('success')),
+                icon: "success",
+                confirmButtonColor: "#3085d6"
+            });
+            @endif
+        });
 </script>
-@endif
 
 @endsection
 

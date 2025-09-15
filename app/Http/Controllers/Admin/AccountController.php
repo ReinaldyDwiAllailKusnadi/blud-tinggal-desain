@@ -50,7 +50,7 @@ class AccountController extends Controller
 
         // Simpan foto jika ada
         if ($request->hasFile('photo')) {
-            $path = $request->file('photo')->store('assets/profile', 'public'); // simpan ke storage/app/public/profile
+            $path = $request->file('photo')->store('assets/profile', 'public_html_storage'); // simpan ke storage/app/public/profile
             $data['photo'] = Storage::url($path); // hasilnya: /storage/profile/namafile.jpg
         }
 
@@ -92,7 +92,7 @@ class AccountController extends Controller
                 Storage::delete($oldPath);
             }
 
-            $path = $request->file('photo')->store('assets/profile', 'public'); // simpan ke storage/app/public/assets/profile
+            $path = $request->file('photo')->store('assets/profile', 'public_html_storage'); // simpan ke storage/app/public/assets/profile
             $data['photo'] = Storage::url($path);
         }
 

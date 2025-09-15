@@ -33,4 +33,9 @@ class Submission extends Model
         return $this->belongsTo(Content::class, 'name');
     }
 
+        public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
+
 }

@@ -7,6 +7,8 @@ use Illuminate\Http\Request;
 use App\Models\Submission;
 use App\Models\Content;
 use Carbon\Carbon; 
+use App\Mail\BookingStatusMail;
+use Illuminate\Support\Facades\Mail;
 
 class SubmissionController extends Controller
 {
@@ -52,25 +54,38 @@ class SubmissionController extends Controller
     public function approve($id)
     {
         $submission = Submission::findOrFail($id);
-        $submission->update(['status' => 'approved']);
+        $submission->status = 'approved';
         $submission->save();
 
-        return back()->with('success', 'Pengajuan disetujui.');
+    // kirim email ke user
+    if ($submission->user && $submission->user->email) {
+        Mail::to($submission->user->email)
+            ->send(new BookingStatusMail($submission, 'approved'));
+    }
+
+        return redirect()->back()->with('success', 'Pengajuan disetujui dan email terkirim.');
     }
 
     public function reject(Request $request, $id)
     {
         $request->validate([
-            'notes' => 'required|string|max:1000',
-        ]);
+        'notes' => 'required|string|max:1000',
+    ]);
 
-        $submission = Submission::findOrFail($id);
-        $submission->status = 'rejected';
-        $submission->notes = $request->notes; 
-        $submission->save();
+    $submission = Submission::findOrFail($id);
+    $submission->status = 'rejected';
+    $submission->notes = $request->notes;
+    $submission->save();
 
-        return back()->with('success', 'Pengajuan ditolak.');
+    // kirim email ke user
+    if ($submission->user && $submission->user->email) {
+        Mail::to($submission->user->email)
+            ->send(new BookingStatusMail($submission, 'rejected'));
     }
+
+        return redirect()->back()->with('success', 'Pengajuan ditolak dan email terkirim.');
+    }
+
 
     public function edit($id)
     {
@@ -106,34 +121,34 @@ class SubmissionController extends Controller
 
             // update file jika ada upload baru
             if ($request->hasFile('file')) {
-                if ($submission->file && \Storage::disk('public')->exists($submission->file)) {
-                    \Storage::disk('public')->delete($submission->file);
+                if ($submission->file && \Storage::disk('public_html_storage')->exists($submission->file)) {
+                    \Storage::disk('public_html_storage')->delete($submission->file);
                 }
-                $filePath = $request->file('file')->store('assets/rundowns', 'public');
+                $filePath = $request->file('file')->store('assets/rundowns', 'public_html_storage');
                 $data['file'] = $filePath;
             }
 
             if ($request->hasFile('ktp')) {
-                if ($submission->ktp && \Storage::disk('public')->exists($submission->ktp)) {
-                    \Storage::disk('public')->delete($submission->ktp);
+                if ($submission->ktp && \Storage::disk('public_html_storage')->exists($submission->ktp)) {
+                    \Storage::disk('public_html_storage')->delete($submission->ktp);
                 }
-                $ktpPath = $request->file('ktp')->store('assets/ktp', 'public');
+                $ktpPath = $request->file('ktp')->store('assets/ktp', 'public_html_storage');
                 $data['ktp'] = $ktpPath;
             }
 
             if ($request->hasFile('appl_letter')) {
-                if ($submission->appl_letter && \Storage::disk('public')->exists($submission->appl_letter)) {
-                    \Storage::disk('public')->delete($submission->appl_letter);
+                if ($submission->appl_letter && \Storage::disk('public_html_storage')->exists($submission->appl_letter)) {
+                    \Storage::disk('public_html_storage')->delete($submission->appl_letter);
                 }
-                $applLetterPath = $request->file('appl_letter')->store('assets/appl_letters', 'public');
+                $applLetterPath = $request->file('appl_letter')->store('assets/appl_letters', 'public_html_storage');
                 $data['appl_letter'] = $applLetterPath;
             }
 
             if ($request->hasFile('actv_letter')) {
-                if ($submission->actv_letter && \Storage::disk('public')->exists($submission->actv_letter)) {
-                    \Storage::disk('public')->delete($submission->actv_letter);
+                if ($submission->actv_letter && \Storage::disk('public_html_storage')->exists($submission->actv_letter)) {
+                    \Storage::disk('public_html_storage')->delete($submission->actv_letter);
                 }
-                $actvLetterPath = $request->file('actv_letter')->store('assets/actv_letters', 'public');
+                $actvLetterPath = $request->file('actv_letter')->store('assets/actv_letters', 'public_html_storage');
                 $data['actv_letter'] = $actvLetterPath;
             }
 
@@ -154,8 +169,8 @@ class SubmissionController extends Controller
 
             $files = ['file', 'ktp', 'appl_letter', 'actv_letter'];
             foreach ($files as $fileField) {
-                if ($submission->$fileField && \Storage::disk('public')->exists($submission->$fileField)) {
-                    \Storage::disk('public')->delete($submission->$fileField);
+                if ($submission->$fileField && \Storage::disk('public_html_storage')->exists($submission->$fileField)) {
+                    \Storage::disk('public_html_storage')->delete($submission->$fileField);
                 }
             }
 
@@ -168,5 +183,7 @@ class SubmissionController extends Controller
                 ->with('error', 'Terjadi kesalahan saat menghapus pengajuan: ' . $e->getMessage());
         }
     }
+
+
 
 }

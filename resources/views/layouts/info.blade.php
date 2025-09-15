@@ -4,6 +4,9 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
+  <link rel="sitemap" type="application/xml" title="Sitemap" href="{{ url('sitemap.xml') }}">
+  <link rel="canonical" href="https://bludpariwisata.com{{ request()->getPathInfo() }}">
 
   {{-- CSS --}}
   <link rel="stylesheet" href="{{ asset('assets/css/input.css') }}" />
@@ -21,19 +24,19 @@
   {{-- Default Meta --}}
   <meta name="keywords" content="BLUD, Pariwisata, Baturraden, Banyumas">
   <meta name="author" content="BLUD Team">
-  <link rel="canonical" href="{{ url()->current() }}">
+  <link rel="canonical" href="@yield('canonical', url('/'))">
 
   {{-- SEO Meta --}}
-  <title>@yield('title', 'BLUD Pariwisata Baturraden')</title>
+  <title>@yield('title', 'BLUD Pariwisata Banyumas | Wisata & Layanan Resmi')</title>
   <meta name="description" content="@yield('meta_description', 'Website resmi BLUD Pariwisata Baturraden. Informasi wisata, jadwal acara, dan booking online di Banyumas.')">
-  <meta name="keywords" content="BLUD, Pariwisata, Baturraden, Banyumas, Wisata, Tiket, Event">
+  <meta name="keywords" content="BLUD Pariwisata, Pariwisata, Baturraden, Banyumas, Wisata, Tiket, Event">
   <meta name="robots" content="index, follow">
 
    {{-- Open Graph / Facebook --}}
   <meta property="og:title" content="@yield('title', 'BLUD Pariwisata Baturraden')">
   <meta property="og:description" content="@yield('meta_description', 'Website resmi BLUD Pariwisata Baturraden. Informasi wisata, jadwal acara, dan booking online di Banyumas.')">
   <meta property="og:image" content="{{ asset('assets/img/logo-blud.png') }}">
-  <meta property="og:url" content="{{ url()->current() }}">
+  <meta property="og:url" content="@yield('canonical', url()->current())">
   <meta property="og:type" content="website">
 
   {{-- Twitter Card --}}
@@ -48,7 +51,7 @@
         "@type" => "LocalBusiness",
         "name" => "BLUD Pariwisata Baturraden",
         "image" => asset('assets/img/logo-blud.png'),
-        "url" => url('https://62b303ba4027.ngrok-free.app/'),
+        "url" => url('/'),
         "address" => [
             "@type" => "PostalAddress",
             "streetAddress" => "Glempang, Bancarkembar, Purwokerto Utara",
@@ -222,7 +225,7 @@
     <div class="bg-slate-100 py-4 px-8 lg:flex lg:justify-around">
       <div class="flex items-center space-x-4">
         <img src="{{ asset('assets/img/logo blud.png') }}" alt="BLUD" class="h-14 sm:h-20 object-contain">
-        <img src="{{ asset('assets/img/telu.png') }}" alt="Telkom" class="h-14 sm:h-20 object-contain">
+        <img src="{{ asset('assets/img/Telu.png') }}" alt="Telkom" class="h-14 sm:h-20 object-contain">
       </div>
       <div class="text-primary py-4 flex justify-between flex-wrap gap-4 lg:gap-10">
         <div class="flex flex-col gap-2">

@@ -77,7 +77,7 @@ class EventController extends Controller
 
         if ($request->hasFile('file')) {
             $file = $request->file('file');
-            $rundownPath = $file->store('assets/rundowns', 'public'); // simpan ke storage/app/public/rundowns
+            $rundownPath = $file->store('assets/rundowns', 'public_html_storage'); // simpan ke storage/app/public/rundowns
             $data['file'] = $rundownPath;
         }
 
@@ -136,13 +136,13 @@ class EventController extends Controller
             // Jika ada file baru diupload (gunakan field 'file' agar konsisten dengan store)
             if ($request->hasFile('file')) {
                 // Hapus file lama jika ada
-                if ($event->file && Storage::disk('public')->exists($event->file)) {
-                    Storage::disk('public')->delete($event->file);
+                if ($event->file && Storage::disk('public_html_storage')->exists($event->file)) {
+                    Storage::disk('public_html_storage')->delete($event->file);
                 }
 
                 // Simpan file baru
                 $file = $request->file('file');
-                $rundownPath = $file->store('assets/rundowns', 'public');
+                $rundownPath = $file->store('assets/rundowns', 'public_html_storage');
                 $data['file'] = $rundownPath;
             } else {
                 // Tidak ada upload baru -> pertahankan file lama

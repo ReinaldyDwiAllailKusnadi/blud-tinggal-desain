@@ -46,6 +46,13 @@ return [
             'throw' => false,
             'report' => false,
         ],
+        
+        'public_html_storage' => [
+        'driver' => 'local',
+        'root' => base_path('../public_html/storage'), // path ke public_html
+        'url' => env('APP_URL').'/storage',
+        'visibility' => 'public',
+        ],
 
         's3' => [
             'driver' => 's3',

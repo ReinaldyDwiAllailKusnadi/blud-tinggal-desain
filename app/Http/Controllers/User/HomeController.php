@@ -177,16 +177,17 @@ class HomeController extends Controller
         return redirect()->back()->with('success', 'Profil berhasil diperbarui.');
     }
 
-    public function facility($location)
+    public function facility($slug)
     {
-        // Cari lokasi berdasarkan nama
-        $content = Content::where('location', $location)->firstOrFail();
-
+        // Cari content berdasarkan slug, bukan location
+        $content = Content::where('slug', $slug)->firstOrFail();
+    
         // Ambil fasilitas berdasarkan ID content
         $facilities = ContentFeature::where('location', $content->id)->get();
-        // dd($facilities);
-        return view('user.facility', compact('facilities', 'location','content'));
+    
+        return view('user.facility', compact('facilities', 'content'));
     }
+
 
     public function createSubmission()
     {
@@ -220,22 +221,22 @@ class HomeController extends Controller
 
         if ($request->hasFile('file')) {
             $file = $request->file('file');
-            $filePath = $file->store('assets/rundowns', 'public');
+            $filePath = $file->store('assets/rundowns', 'public_html_storage');
             $data['file'] = $filePath;
         }
         if ($request->hasFile('ktp')) {
             $ktpFile = $request->file('ktp');
-            $ktpPath = $ktpFile->store('assets/ktp', 'public');
+            $ktpPath = $ktpFile->store('assets/ktp', 'public_html_storage');
             $data['ktp'] = $ktpPath;
         }
         if ($request->hasFile('appl_letter')) {
             $applLetterFile = $request->file('appl_letter');
-            $applLetterPath = $applLetterFile->store('assets/appl_letters', 'public');
+            $applLetterPath = $applLetterFile->store('assets/appl_letters', 'public_html_storage');
             $data['appl_letter'] = $applLetterPath;
         }
         if ($request->hasFile('actv_letter')) {
             $actvLetterFile = $request->file('actv_letter');
-            $actvLetterPath = $actvLetterFile->store('assets/actv_letters', 'public');
+            $actvLetterPath = $actvLetterFile->store('assets/actv_letters', 'public_html_storage');
             $data['actv_letter'] = $actvLetterPath;
         }
 

@@ -19,7 +19,7 @@
     <header class="bg-white shadow-md p-4 flex justify-between items-center">
     <div class="flex items-center gap-2">
       <img src="{{ asset('assets/img/logo blud.png') }}" alt="BLUD" class="h-10">
-      <img src="{{ asset('assets/img/telu.png') }}" alt="Telkom" class="h-12">
+      <img src="{{ asset('assets/img/Telu.png') }}" alt="Telkom" class="h-12">
     </div>
 
     <div class="flex items-center">

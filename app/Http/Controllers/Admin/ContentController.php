@@ -54,7 +54,7 @@ class ContentController extends Controller
             $data['slug'] = Str::slug($data['name'], '-');
 
             if ($request->hasFile('image')) {
-                $data['image'] = $request->file('image')->store('assets/content', 'public');
+                $data['image'] = $request->file('image')->store('assets/content', 'public_html_storage');
             }
 
             $content = Content::create($data);
@@ -111,7 +111,7 @@ class ContentController extends Controller
 
         if ($request->hasFile('image')) {
             $file = $request->file('image');
-            $imagePath = $file->store('assets/content', 'public'); // simpan ke storage/app/public/content
+            $imagePath = $file->store('assets/content', 'public_html_storage'); // simpan ke storage/app/public/content
             $data['image'] = $imagePath;
         }
 

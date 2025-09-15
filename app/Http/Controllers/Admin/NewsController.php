@@ -42,7 +42,7 @@ class NewsController extends Controller
 
         if ($request->hasFile('image')) {
             $file = $request->file('image');
-            $imagePath = $file->store('assets/news', 'public'); // simpan ke storage/app/public/news
+            $imagePath = $file->store('assets/news', 'public_html_storage'); // simpan ke storage/app/public/news
             $data['image'] = $imagePath;
         }
 
@@ -77,10 +77,10 @@ class NewsController extends Controller
         if ($request->hasFile('image')) {
             // Hapus gambar lama jika ada
             if ($news->image) {
-                Storage::disk('public')->delete($news->image);
+                Storage::disk('public_html_storage')->delete($news->image);
             }
             $file = $request->file('image');
-            $data['image'] = $file->store('assets/news', 'public');
+            $data['image'] = $file->store('assets/news', 'public_html_storage');
         }
 
         $news->update($data);
@@ -98,7 +98,7 @@ class NewsController extends Controller
 
         // Hapus gambar jika ada
         if ($news->image) {
-            Storage::disk('public')->delete($news->image);
+            Storage::disk('public_html_storage')->delete($news->image);
         }
 
         $news->delete();

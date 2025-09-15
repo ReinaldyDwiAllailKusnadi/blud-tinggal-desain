@@ -56,7 +56,7 @@
         {{-- Jam Operasional & Harga --}}
         <div class="bg-white/80 backdrop-blur-sm border rounded-2xl shadow p-6">
             <h2 class="text-2xl font-semibold text-gray-800 mb-4 border-b pb-2">
-                Jam Operasional & Harga
+                Jam Operasional & Harga Tiket
             </h2>
 
             <div class="space-y-4">
@@ -100,7 +100,7 @@
             @endif
         </div>
         <div class="flex justify-end">
-            <a href="{{ route('fasilitas', ['location' => $contents->location]) }}" 
+            <a href="{{ route('fasilitas', $contents->slug) }}" 
             class="group flex items-center gap-2 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white px-4 py-2 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 ease-out">
                 
                 <span class="font-medium text-sm tracking-wide">Info Lebih Lanjut</span>
