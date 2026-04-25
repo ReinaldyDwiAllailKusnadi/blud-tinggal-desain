@@ -21,8 +21,11 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-    URL::forceScheme('https');
-    Carbon::setLocale('id');
-    \Illuminate\Support\Facades\App::setLocale('id');
+        if ($this->app->environment('production')) {
+            URL::forceScheme('https');
+        }
+
+        Carbon::setLocale('id');
+        \Illuminate\Support\Facades\App::setLocale('id');
     }
 }

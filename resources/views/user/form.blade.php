@@ -164,8 +164,6 @@
             </div>
         </form>
     </div>
-</main>
-
 @if(session('error'))
 <script>
     Swal.fire({

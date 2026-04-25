@@ -35,7 +35,7 @@
    {{-- Open Graph / Facebook --}}
   <meta property="og:title" content="@yield('title', 'BLUD Pariwisata Baturraden')">
   <meta property="og:description" content="@yield('meta_description', 'Website resmi BLUD Pariwisata Baturraden. Informasi wisata, jadwal acara, dan booking online di Banyumas.')">
-  <meta property="og:image" content="{{ asset('assets/img/logo-blud.png') }}">
+  <meta property="og:image" content="{{ asset('assets/img/logo blud.png') }}">
   <meta property="og:url" content="@yield('canonical', url()->current())">
   <meta property="og:type" content="website">
 
@@ -43,14 +43,14 @@
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="@yield('title', 'BLUD Pariwisata Baturraden')">
   <meta name="twitter:description" content="@yield('meta_description', 'Website resmi BLUD Pariwisata Baturraden. Informasi wisata, jadwal acara, dan booking online di Banyumas.')">
-  <meta name="twitter:image" content="{{ asset('assets/img/logo-blud.png') }}">
+  <meta name="twitter:image" content="{{ asset('assets/img/logo blud.png') }}">
 
 @php
     $seoSchema = [
         "@context" => "https://schema.org",
         "@type" => "LocalBusiness",
         "name" => "BLUD Pariwisata Baturraden",
-        "image" => asset('assets/img/logo-blud.png'),
+        "image" => asset('assets/img/logo blud.png'),
         "url" => url('/'),
         "address" => [
             "@type" => "PostalAddress",

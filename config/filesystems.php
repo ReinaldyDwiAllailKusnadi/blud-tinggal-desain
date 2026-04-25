@@ -48,10 +48,10 @@ return [
         ],
         
         'public_html_storage' => [
-        'driver' => 'local',
-        'root' => base_path('../public_html/storage'), // path ke public_html
-        'url' => env('APP_URL').'/storage',
-        'visibility' => 'public',
+            'driver' => 'local',
+            'root' => env('PUBLIC_HTML_STORAGE_PATH', storage_path('app/public')),
+            'url' => env('APP_URL').'/storage',
+            'visibility' => 'public',
         ],
 
         's3' => [

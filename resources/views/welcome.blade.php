@@ -110,7 +110,7 @@
           <div class="p-4 flex flex-col gap-2 flex-grow">
             <h2 class="font-bold text-base md:text-lg">{{ $item->title }}</h2>
             <h3 class="text-sm text-gray-500">
-              {{ \Carbon\Carbon::parse($item->published_at)->translatedFormat('l, d F Y H:i') }} WIB
+              {{ \Carbon\Carbon::parse($item->upload_time)->translatedFormat('l, d F Y H:i') }} WIB
             </h3>
             <p class="text-justify text-sm text-gray-700">
               {{ $item->content }}
