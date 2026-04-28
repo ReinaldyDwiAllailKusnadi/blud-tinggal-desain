@@ -39,7 +39,7 @@
                             <td class="p-3 text-center align-middle">{{ $loop->iteration}}</td>
                             <td class="p-3 text-center align-middle">
                                 @if ($newsItem->image)
-                                    <a href="{{ asset('storage/' . $newsItem->image) }}" target="_blank">
+                                    <a href="{{ asset($newsItem->image) }}" target="_blank">
                                         <img src="{{ asset('assets/img/Picture.png') }}" alt="image" class="w-8 h-8 mx-auto">
                                     </a>
                                 @else
@@ -62,7 +62,7 @@
                                     <div class="bg-white rounded-lg shadow-lg max-w-xl w-full max-h-[90vh] overflow-y-auto p-6 relative">
                                         <button onclick="closeModal({{ $newsItem->id }})" class="absolute top-2 right-2 text-gray-500 hover:text-gray-700 text-5xl">&times;</button>
                                         @if ($newsItem->image)
-                                            <img src="{{ asset('storage/' . $newsItem->image) }}" alt="image" class="w-60 h-40 object-cover mx-auto mb-4 rounded">
+                                            <img src="{{ asset($newsItem->image) }}" alt="image" class="w-60 h-40 object-cover mx-auto mb-4 rounded">
                                         @endif                                        <h2 class="text-xl font-semibold mb-4">{{ $newsItem->title }}</h2>
                                         <p class="text-gray-700 text-sm mb-4">
                                             <strong>Upload:</strong> {{ \Carbon\Carbon::parse($newsItem->upload_time)->format('d/m/Y - H:i') }}

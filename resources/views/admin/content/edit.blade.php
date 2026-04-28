@@ -97,7 +97,7 @@
                 <label class="block font-medium">Gambar</label>
                 <input type="file" name="image" class="w-full border px-4 py-2 rounded">
                 @if($content->image)
-                    <img src="{{ asset('storage/'.$content->image) }}" class="mt-2 w-40">
+                    <img src="{{ asset($content->image) }}" class="mt-2 w-40">
                 @endif
             </div>
 

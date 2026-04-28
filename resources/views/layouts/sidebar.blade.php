@@ -24,7 +24,13 @@
 
     <div class="flex items-center">
       <span class="mr-4 font-medium text-gray-700">{{ auth()->user()->username }}</span>
-      <img src="{{ auth()->user()->photo }}" alt="Profile" class="h-10 w-10 rounded-full border border-gray-300">
+      @if(auth()->user()->photo)
+        <img src="{{ asset(auth()->user()->photo) }}" alt="Profile" class="h-10 w-10 rounded-full border border-gray-300 object-cover">
+      @else
+        <div class="h-10 w-10 rounded-full border border-gray-300 bg-blue-400 flex items-center justify-center text-white font-bold text-sm">
+          {{ strtoupper(substr(auth()->user()->username, 0, 1)) }}
+        </div>
+      @endif
     </div>
   </header>
 

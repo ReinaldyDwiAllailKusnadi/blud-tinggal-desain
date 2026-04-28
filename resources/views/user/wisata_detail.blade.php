@@ -14,7 +14,7 @@
         {{-- Gambar Wisata --}}
         @if($contents->image)
             <div>
-                <img src="{{ asset('storage/' . $contents->image) }}" alt="{{ $contents->name }}"
+                <img src="{{ asset($contents->image) }}" alt="{{ $contents->name }}"
                      class="w-full rounded-xl shadow-md object-cover max-h-[500px]">
             </div>
         @endif

@@ -79,7 +79,7 @@
       <div class="inline-flex gap-4 px-2">
         @forelse ($contents as $item)
           <img 
-            src="{{ asset('storage/' . $item->image) }}" 
+            src="{{ asset($item->image) }}" 
             alt="{{ $item->name }}" 
             class="h-36 w-44 object-cover rounded-lg shadow-md"
           />
@@ -104,7 +104,7 @@
         >
           <img 
             class="w-full h-48 md:h-40 object-cover" 
-            src="{{ asset('storage/' . $item->image) }}" 
+            src="{{ asset($item->image) }}" 
             alt="{{ $item->title }}" 
           />
           <div class="p-4 flex flex-col gap-2 flex-grow">

@@ -18,7 +18,7 @@
                 @if($news->image)
                     <div class="mt-2">
                         <p class="text-sm text-gray-600">Gambar Saat Ini:</p>
-                        <img src="{{ asset('storage/' . $news->image) }}" alt="Gambar Berita" class="h-40 mt-1 rounded shadow">
+                        <img src="{{ asset($news->image) }}" alt="Gambar Berita" class="h-40 mt-1 rounded shadow">
                     </div>
                 @endif
             </div>

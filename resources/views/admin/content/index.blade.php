@@ -48,7 +48,7 @@
                             <td class="p-3 text-center align-middle">{{ $content->location }}</td>
                             <td class="p-3 text-center align-middle">
                                 @if ($content->image)
-                                    <a href="{{ asset('storage/' . $content->image) }}" target="_blank">
+                                    <a href="{{ asset($content->image) }}" target="_blank">
                                         <img src="{{ asset('assets/img/Picture.png') }}" alt="image" class="w-8 h-8 mx-auto">
                                     </a>
                                 @else
@@ -68,7 +68,7 @@
                                         <button onclick="closeModal({{ $content->id }})" class="absolute top-2 right-2 text-gray-500 hover:text-gray-700 text-5xl">&times;</button>
                                         
                                         @if ($content->image)
-                                            <img src="{{ asset('storage/' . $content->image) }}" alt="image" class="w-60 h-40 object-cover mx-auto mb-4 rounded">
+                                            <img src="{{ asset($content->image) }}" alt="image" class="w-60 h-40 object-cover mx-auto mb-4 rounded">
                                         @endif
 
                                         <h2 class="text-xl font-semibold text-center mb-2">{{ $content->name }}</h2>

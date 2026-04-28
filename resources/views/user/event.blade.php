@@ -12,7 +12,7 @@
       @forelse ($contents as $item)
           <a href="{{ route('booking', $item->slug) }}" class="block group">
             <div class="flex flex-col items-center bg-primary shadow-lg rounded-lg overflow-hidden transform transition duration-300 ease-in-out group-hover:scale-105 group-hover:shadow-2xl">
-              <img class="w-full h-[230px] object-cover transition duration-300 group-hover:opacity-95" src="{{ asset('storage/' . $item->image) }}" alt="{{ $item->name }}">
+              <img class="w-full h-[230px] object-cover transition duration-300 group-hover:opacity-95" src="{{ asset($item->image) }}" alt="{{ $item->name }}">
               <div class="p-4 text-left w-full">
                 <h2 class="font-bold text-white text-xl mb-2 transition duration-300 group-hover:text-white-300">
                   {{ $item->name }}

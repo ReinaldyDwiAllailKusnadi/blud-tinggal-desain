@@ -11,7 +11,7 @@
     <div class="grid grid-cols-1 gap-6 mt-10 lg:grid-cols-4 lg:gap-8">
       @forelse ($contents as $item)
           <div class="flex flex-col items-center shadow-lg rounded-lg overflow-hidden h-full">
-             <img class="w-full h-[230px] object-cover" src="{{ asset('storage/' . $item->image) }}" alt="{{ $item->name }}">
+             <img class="w-full h-[230px] object-cover" src="{{ asset($item->image) }}" alt="{{ $item->name }}">
       <div class="p-4 text-left w-full flex-1 flex flex-col">
         <h2 class="font-bold text-black text-xl mb-2">{{ $item->name }}</h2>
         <div class="flex items-center gap-2 mb-4">
