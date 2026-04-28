@@ -8,6 +8,8 @@ use App\Models\Content;
 use Illuminate\Support\Str;
 use App\Models\Activity;
 use App\Models\ContentFeature;
+use App\Http\Requests\StoreContentRequest;
+use App\Http\Requests\UpdateContentRequest;
 
 class ContentController extends Controller
 {
@@ -29,27 +31,10 @@ class ContentController extends Controller
         return view('admin.content.create');
     }
 
-    public function store(Request $request)
+    public function store(StoreContentRequest $request)
     {
         try {
-            $data = $request->validate([
-                'name'          => 'required|string|max:255',
-                'description'   => 'nullable|string',
-                'price_weekday' => 'nullable|string',
-                'price_weekend' => 'nullable|string',
-                'open_time'     => 'nullable|date_format:H:i',
-                'close_time'    => 'nullable|date_format:H:i',
-                'location'      => 'nullable|string|max:255',
-                'location_embed'=> 'nullable|string',
-                'image'         => 'nullable|image|mimes:jpg,jpeg,png|max:5048',
-                'instagram' => 'nullable|string',
-                'tiktok' => 'nullable|string',
-            ]);
-
-            $existing = Content::where('name', $data['name'])->first();
-            if ($existing) {
-                return back()->with('error', 'Nama '. $data['name'] . ' sudah digunakan.');
-            }
+            $data = $request->validated();
 
             $data['slug'] = Str::slug($data['name'], '-');
 
@@ -63,6 +48,8 @@ class ContentController extends Controller
                 'admin_id'    => auth('admin')->id(),
                 'description' => 'menambahkan tempat wisata baru.',
             ]);
+
+            \Illuminate\Support\Facades\Cache::forget('wisata_all');
 
             return redirect()->route('content.facilities', ['id' => $content->id])
             ->with('success', 'Konten berhasil ditambahkan. Silakan tambahkan data fasilitas.');
@@ -80,30 +67,10 @@ class ContentController extends Controller
         return view('admin.content.edit', compact('content'));
     }
 
-    public function update(Request $request, Content $content)
+    public function update(UpdateContentRequest $request, Content $content)
     {
         try {
-        $data = $request->validate([
-            'name' => 'sometimes|string|max:255',
-            'slug' => 'nullable|string|max:255|unique:content,slug,' . $content->id,
-            'description' => 'nullable|string',
-            'price_weekday' => 'nullable|string',
-            'price_weekend' => 'nullable|string',
-            'open_time' => 'nullable|date_format:H:i',
-            'close_time' => 'nullable|date_format:H:i',
-            'location' => 'nullable|string|max:255',
-            'location_embed'=> 'nullable|string',
-            'image' => 'nullable|image|mimes:jpg,jpeg,png|max:5048',
-            'instagram' => 'nullable|string',
-            'whatsapp' => 'nullable|string',
-        ]);
-
-        if (isset($data['name']) && $data['name'] !== $content->name) {
-            $existing = Content::where('name', $data['name'])->first();
-            if ($existing) {
-                return back()->with('error', 'Nama ' . $data['name'] . ' sudah digunakan.');
-            }
-        }
+        $data = $request->validated();
 
         if (!empty($data['name'])) {
             $data['slug'] = Str::slug($data['name'], '-');
@@ -121,6 +88,8 @@ class ContentController extends Controller
             'description' => 'mengedit tempat wisata.',
         ]);
 
+        \Illuminate\Support\Facades\Cache::forget('wisata_all');
+
         return redirect()->route('content.index')->with('success', 'Konten berhasil diupdate.');
         } catch (\Exception $e) {
         return back()
@@ -132,6 +101,8 @@ class ContentController extends Controller
     public function destroy(Content $content)
     {
         $content->delete();
+
+        \Illuminate\Support\Facades\Cache::forget('wisata_all');
 
         return redirect()->route('content.index')->with('success', 'Data berhasil dihapus.');
     }

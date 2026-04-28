@@ -14,15 +14,38 @@ class SubmissionController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Submission::query();
-
-        $query->where('status', 'pending');
+        $query = Submission::query()->where('status', 'pending');
 
         if ($request->filled('search')) {
             $query->where('vendor', 'like', '%' . $request->search . '%');
         }
+        if ($request->filled('location')) {
+            $query->where('location', $request->location);
+        }
+        if ($request->filled('month')) {
+            $query->whereMonth('created_at', $request->month);
+        }
+
         $submissions = $query->orderBy('id', 'desc')->get();
-        return view('admin.submission.index', compact('submissions'));
+        $contents = Content::all();
+        
+        return view('admin.submission.index', compact('submissions', 'contents'));
+    }
+
+    public function exportPdf(Request $request)
+    {
+        $status = $request->query('status', 'all');
+        $query = Submission::query();
+
+        if ($status !== 'all') {
+            $query->where('status', $status);
+        }
+
+        $submissions = $query->orderBy('created_at', 'desc')->get();
+
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('admin.submission.pdf', compact('submissions', 'status'));
+        
+        return $pdf->download('Laporan_Pengajuan_Sewa_' . \Carbon\Carbon::now()->format('Ymd_His') . '.pdf');
     }
 
     public function approved(Request $request)
@@ -32,10 +55,17 @@ class SubmissionController extends Controller
         if ($request->filled('search')) {
             $query->where('vendor', 'like', '%' . $request->search . '%');
         }
+        if ($request->filled('location')) {
+            $query->where('location', $request->location);
+        }
+        if ($request->filled('month')) {
+            $query->whereMonth('created_at', $request->month);
+        }
 
         $submissions = $query->orderBy('id', 'desc')->get();
+        $contents = Content::all();
 
-        return view('admin.submission.approved', compact('submissions'));
+        return view('admin.submission.approved', compact('submissions', 'contents'));
     }
 
     public function rejected(Request $request)
@@ -45,10 +75,17 @@ class SubmissionController extends Controller
         if ($request->filled('search')) {
             $query->where('vendor', 'like', '%' . $request->search . '%');
         }
+        if ($request->filled('location')) {
+            $query->where('location', $request->location);
+        }
+        if ($request->filled('month')) {
+            $query->whereMonth('created_at', $request->month);
+        }
 
         $submissions = $query->orderBy('id', 'desc')->get();
+        $contents = Content::all();
 
-        return view('admin.submission.rejected', compact('submissions'));
+        return view('admin.submission.rejected', compact('submissions', 'contents'));
     }
 
     public function approve($id)

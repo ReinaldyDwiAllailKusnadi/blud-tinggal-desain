@@ -5,8 +5,12 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\Content;
 
+use Illuminate\Database\Eloquent\SoftDeletes;
+
 class Submission extends Model
 {
+    use SoftDeletes;
+
     protected $table = 'submission';
 
     protected $fillable = [

@@ -1,0 +1,109 @@
+/* 
+ * GLOBAL DARK MODE STYLES FOR ADMIN
+ * Target: .dark (used by Tailwind and Alpine.js)
+ */
+
+/* Background & Text Utama */
+.dark body, 
+.dark main,
+.dark .bg-gray-50, 
+.dark .bg-gray-100 {
+    background-color: #0f172a !important; /* slate-900 */
+    color: #f8fafc !important; /* slate-50 */
+}
+
+/* Sidebar, Topbar, Footer, Container, Cards, Modals */
+.dark header, 
+.dark aside, 
+.dark footer, 
+.dark .bg-white,
+.dark .bg-blue-50,
+.dark .modal-content,
+.dark .dropdown-menu {
+    background-color: #1e293b !important; /* slate-800 */
+    border-color: #334155 !important;
+    color: #f8fafc !important;
+}
+
+/* Override Text Colors */
+.dark .text-gray-900,
+.dark .text-gray-800,
+.dark .text-gray-700,
+.dark .text-black {
+    color: #f8fafc !important; /* slate-50 */
+}
+
+.dark .text-gray-600,
+.dark .text-gray-500,
+.dark .text-gray-400 {
+    color: #cbd5e1 !important; /* slate-300 */
+}
+
+/* Borders */
+.dark .border,
+.dark .border-b,
+.dark .border-t,
+.dark .border-gray-200,
+.dark .border-gray-300 {
+    border-color: #334155 !important; /* slate-700 */
+}
+
+/* Table Specific */
+.dark table {
+    background-color: #1e293b !important;
+}
+.dark th, 
+.dark .bg-blue-300 {
+    background-color: #1e40af !important; /* blue-800 */
+    color: #f8fafc !important;
+    border-color: #334155 !important;
+}
+.dark td {
+    border-color: #334155 !important;
+    color: #cbd5e1 !important;
+}
+
+/* Hover States for Menu & Table Rows */
+.dark .hover\:bg-blue-100:hover,
+.dark .hover\:bg-gray-100:hover,
+.dark tr:hover td {
+    background-color: #334155 !important; /* slate-700 */
+}
+
+/* Forms (Input, Select, Textarea) */
+.dark input,
+.dark select,
+.dark textarea {
+    background-color: #0f172a !important; /* slate-900 */
+    border-color: #334155 !important; /* slate-700 */
+    color: #f8fafc !important; /* slate-50 */
+}
+
+/* Placeholder adjustments */
+.dark input::placeholder,
+.dark textarea::placeholder {
+    color: #94a3b8 !important; /* slate-400 */
+}
+
+/* 
+ * EXCEPTIONS: Ensure action buttons retain original colors
+ * We don't want the text-color overrides to break button text colors, 
+ * but since buttons usually use text-white, they should be fine. 
+ * Just in case, let's explicitly preserve primary buttons.
+ */
+.dark button.bg-blue-500, .dark a.bg-blue-400, .dark a.bg-blue-500 { background-color: #3b82f6 !important; color: #fff !important; }
+.dark button.bg-green-500, .dark a.bg-green-500 { background-color: #22c55e !important; color: #fff !important; }
+.dark button.bg-red-500, .dark a.bg-red-600 { background-color: #ef4444 !important; color: #fff !important; }
+.dark .text-blue-600 { color: #60a5fa !important; } /* blue-400 for links in dark mode */
+.dark .text-green-600 { color: #4ade80 !important; }
+.dark .text-red-600 { color: #f87171 !important; }
+
+/* SweetAlert2 Modal in Dark Mode */
+.dark .swal2-popup {
+    background-color: #1e293b !important; /* slate-800 */
+    color: #f8fafc !important;
+}
+.dark .swal2-title, 
+.dark .swal2-html-container {
+    color: #f8fafc !important;
+}

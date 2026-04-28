@@ -2,21 +2,21 @@
 
 @section('content')
 
-    <main class="p-6 bg-gray-50 flex-1">
+    <main class="p-6 bg-gray-50 dark:bg-slate-900 flex-1 transition-colors duration-200">
         <div class="flex justify-between items-center mb-4">
-            <h3 class="text-lg font-semibold">List Tempat Wisata</h3>
+            <h3 class="text-lg font-semibold text-gray-800 dark:text-slate-50">List Tempat Wisata</h3>
             <form action="{{ route('content.index') }}" method="GET">
                 <input 
                     type="text" 
                     name="search" 
                     value="{{ request('search') }}"
                     placeholder="Search by name..." 
-                    class="border px-4 py-2 rounded-lg w-64"
+                    class="border px-4 py-2 rounded-lg w-64 dark:bg-slate-900 dark:border-slate-700 dark:text-slate-50 dark:placeholder-slate-400"
                 >
             </form>
         </div>
 
-        <div class="bg-white shadow-md rounded-lg p-4">
+        <div class="bg-white dark:bg-slate-800 shadow-md rounded-lg p-4 transition-colors duration-200">
             <div class="mb-4 text-right">
                 <a href="{{route('content.create')}}" class="bg-blue-400 hover:bg-blue-500 text-white px-4 py-2 rounded-lg">
                     Tambah Data Wisata
@@ -24,7 +24,7 @@
             </div>
             <table class="w-full border-collapse">
                 <thead>
-                    <tr class="bg-blue-300 text-white">
+                    <tr class="bg-blue-300 dark:bg-slate-700 text-white dark:text-slate-50">
                         <th class="p-3">No</th>
                         <th class="p-3">Nama Tempat</th>
                         <th class="p-3">Harga Tiket</th>
@@ -37,7 +37,7 @@
                 </thead>
                 <tbody>
                     @forelse ($contents as $content)
-                        <tr class="border-b">
+                        <tr class="border-b dark:border-slate-700 text-gray-800 dark:text-slate-300">
                             <td class="p-3 text-center align-middle">{{ $loop->iteration }}</td>
                             <td class="p-3 text-center align-middle">{{ $content->name }}</td>
                             <td class="p-3 text-center align-middle">Rp{{ $content->price_weekday }}</td>
@@ -64,23 +64,23 @@
 
                                 <!-- Modal -->
                                 <div id="modal-{{ $content->id }}" class="hidden fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center">
-                                    <div class="bg-white rounded-lg shadow-lg max-w-xl w-full max-h-[90vh] overflow-y-auto p-6 relative">
-                                        <button onclick="closeModal({{ $content->id }})" class="absolute top-2 right-2 text-gray-500 hover:text-gray-700 text-5xl">&times;</button>
+                                    <div class="bg-white dark:bg-slate-800 rounded-lg shadow-lg max-w-xl w-full max-h-[90vh] overflow-y-auto p-6 relative transition-colors duration-200">
+                                        <button onclick="closeModal({{ $content->id }})" class="absolute top-2 right-2 text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:hover:text-slate-200 text-5xl">&times;</button>
                                         
                                         @if ($content->image)
                                             <img src="{{ asset($content->image) }}" alt="image" class="w-60 h-40 object-cover mx-auto mb-4 rounded">
                                         @endif
 
-                                        <h2 class="text-xl font-semibold text-center mb-2">{{ $content->name }}</h2>
+                                        <h2 class="text-xl font-semibold text-center mb-2 text-gray-800 dark:text-slate-50">{{ $content->name }}</h2>
 
-                                        <p class="text-gray-600 text-sm text-center mb-4">
+                                        <p class="text-gray-600 dark:text-slate-300 text-sm text-center mb-4">
                                             <strong>Harga Tiket Weekday : </strong>Rp{{$content->price_weekday}}<br>
                                             <strong>Harga Tiket Weekend : </strong>Rp{{$content->price_weekend}}<br>
                                             <strong>Jam Operasional : </strong> {{ \Carbon\Carbon::parse($content->open_time)->format('h:i') }} - {{\Carbon\Carbon::parse($content->close_time)->format('h:i') }}<br>
                                             <strong>Lokasi : </strong> {{ $content->location }}
                                         </p>
 
-                                        <div class="text-gray-800 text-justify leading-relaxed border-t pt-4">
+                                        <div class="text-gray-800 dark:text-slate-300 text-justify leading-relaxed border-t dark:border-slate-700 pt-4">
                                             {!! nl2br(e($content->description)) !!}
                                         </div>
                                     </div>

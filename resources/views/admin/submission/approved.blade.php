@@ -1,24 +1,49 @@
 @extends('layouts.sidebar')
 
 @section('content')
-<main class="p-6 bg-gray-50 flex-1">
+<main class="p-6 bg-gray-50 dark:bg-gray-900 transition-colors duration-200 text-gray-800 dark:text-gray-200 flex-1">
   <div class="flex justify-between items-center mb-4">
     <h3 class="text-lg font-semibold">Daftar Pengajuan Approved</h3>
-    <form action="{{ route('submission.approved.list') }}" method="GET">
+    <form action="{{ route('submission.approved.list') }}" method="GET" class="flex gap-2">
+      <select name="month" class="border px-4 py-2 rounded-lg text-gray-700">
+        <option value="">Semua Bulan</option>
+        @foreach(range(1, 12) as $m)
+          <option value="{{ $m }}" {{ request('month') == $m ? 'selected' : '' }}>
+            {{ \Carbon\Carbon::create()->month($m)->translatedFormat('F') }}
+          </option>
+        @endforeach
+      </select>
+      
+      <select name="location" class="border px-4 py-2 rounded-lg text-gray-700 max-w-[200px]">
+        <option value="">Semua Lokasi</option>
+        @foreach($contents as $content)
+          <option value="{{ $content->name }}" {{ request('location') == $content->name ? 'selected' : '' }}>
+            {{ $content->name }}
+          </option>
+        @endforeach
+      </select>
+
       <input 
         type="text" 
         name="search" 
         value="{{ request('search') }}"
-        placeholder="Search by vendor..." 
-        class="border px-4 py-2 rounded-lg w-64"
+        placeholder="Cari vendor..." 
+        class="border px-4 py-2 rounded-lg w-48"
       >
+      <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">Filter</button>
+      @if(request()->hasAny(['search', 'location', 'month']))
+        <a href="{{ route('submission.approved.list') }}" class="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600">Reset</a>
+      @endif
     </form>
+    <a href="{{ route('submission.export', ['status' => 'approved']) }}" target="_blank" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg font-medium flex items-center gap-2 ml-4">
+      📄 Export PDF
+    </a>
   </div>
 
-  <div class="bg-white shadow-md rounded-lg p-4">
+  <div class="bg-white dark:bg-gray-800 shadow-md rounded-lg p-4 transition-colors duration-200">
     <table class="w-full border-collapse">
       <thead>
-        <tr class="bg-blue-300 text-white">
+        <tr class="bg-blue-300 dark:bg-blue-900 text-white">
           <th class="p-3">No</th>
           <th class="p-3">ID</th>
           <th class="p-3">Kegiatan</th>
@@ -81,23 +106,23 @@
             <!-- Modal -->
             <div id="modal-{{ $sub->id }}" 
                 class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50">
-                  <div class="bg-white w-11/12 max-w-3xl rounded-2xl shadow-2xl p-8 relative">
+                  <div class="bg-white dark:bg-gray-800 w-11/12 max-w-3xl rounded-2xl shadow-2xl p-8 relative transition-colors duration-200">
 
                     <!-- Tombol Close -->
                     <button onclick="closeModal('modal-{{ $sub->id }}')" 
-                            class="absolute top-4 right-4 text-gray-500 hover:text-gray-800 text-2xl font-bold">
+                            class="absolute top-4 right-4 text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 text-2xl font-bold">
                       &times;
                     </button>
 
                     <!-- Header -->
-                    <h2 class="text-2xl font-bold text-gray-800 mb-6 border-b pb-3">
+                    <h2 class="text-2xl font-bold text-gray-800 dark:text-gray-200 mb-6 border-b dark:border-gray-700 pb-3">
                       Detail Pengajuan
                     </h2>
 
                     <!-- Tabel -->
                     <div class="overflow-x-auto">
-                      <table class="w-full text-sm text-gray-700">
-                        <tbody class="divide-y divide-gray-200">
+                      <table class="w-full text-sm text-gray-700 dark:text-gray-300">
+                        <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
                           <tr>
                             <td class="font-semibold py-3 w-1/3">ID</td>
                             <td class="py-3">{{ $sub->id }}</td>

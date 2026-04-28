@@ -18,15 +18,18 @@ class DashboardController extends Controller
         $userCount = User::count();
         $activities = Activity::with('admin')->latest()->take(5)->get();
 
-        // Ambil 5 hari terakhir (termasuk hari ini)
-        $dates = collect(range(0, 4))->map(function ($i) {
-            return \Carbon\Carbon::now()->subDays($i)->format('d M');
+        // Ambil 6 bulan terakhir
+        $dates = collect(range(0, 5))->map(function ($i) {
+            return \Carbon\Carbon::now()->subMonths($i)->format('F Y');
         })->reverse()->values();
 
-        // Hitung jumlah submission untuk setiap tanggal
-        $counts = $dates->map(function ($date) {
-            return Submission::whereDate('created_at', \Carbon\Carbon::createFromFormat('d M', $date))->count();
-        });
+        // Hitung jumlah submission untuk setiap bulan
+        $counts = collect(range(0, 5))->map(function ($i) {
+            $month = \Carbon\Carbon::now()->subMonths($i);
+            return Submission::whereYear('created_at', $month->year)
+                             ->whereMonth('created_at', $month->month)
+                             ->count();
+        })->reverse()->values();
 
         return view('admin.dashboard', compact('userCount', 'activities', 'dates', 'counts'));
     }

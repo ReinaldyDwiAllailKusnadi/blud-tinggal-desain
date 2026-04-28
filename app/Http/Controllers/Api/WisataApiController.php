@@ -13,9 +13,11 @@ class WisataApiController extends Controller
      */
     public function index()
     {
-        $contents = Content::all()->map(function ($content) {
-            $content->image_url = $content->image ? url($content->image) : null;
-            return $content;
+        $contents = \Illuminate\Support\Facades\Cache::remember('wisata_all', 3600, function () {
+            return Content::all()->map(function ($content) {
+                $content->image_url = $content->image ? url($content->image) : null;
+                return $content;
+            });
         });
 
         return response()->json([

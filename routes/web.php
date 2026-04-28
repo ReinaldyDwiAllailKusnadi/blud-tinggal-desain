@@ -61,6 +61,7 @@ Route::prefix('admin')->middleware('auth:admin')->group(function () {
     Route::post('/feature/edit', [FeatureController::class, 'update'])->name('feature.update');
     Route::get('/content/{id}/facilities', [FeatureController::class, 'index'])->name('content.facilities');
 
+    Route::get('submission/export-pdf', [SubmissionController::class, 'exportPdf'])->name('submission.export');
     Route::get('submission', [SubmissionController::class, 'index'])->name('submission.index');
     Route::get('submission/{id}/edit', [SubmissionController::class, 'edit'])->name('submission.edit');
     Route::put('submission/{id}', [SubmissionController::class, 'update'])->name('submission.update');

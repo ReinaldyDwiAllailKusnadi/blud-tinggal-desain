@@ -19,24 +19,25 @@ use App\Http\Controllers\Api\SubmissionApiController;
 */
 
 // === PUBLIC ROUTES (tanpa login) ===
+Route::middleware('throttle:60,1')->group(function () {
+    // Auth
+    Route::post('/register', [AuthController::class, 'register']);
+    Route::post('/login', [AuthController::class, 'login']);
+    Route::post('/auth/google', [AuthController::class, 'googleLogin']);
 
-// Auth
-Route::post('/register', [AuthController::class, 'register']);
-Route::post('/login', [AuthController::class, 'login']);
-Route::post('/auth/google', [AuthController::class, 'googleLogin']);
+    // Beranda
+    Route::get('/home', [HomeApiController::class, 'index']);
 
-// Beranda
-Route::get('/home', [HomeApiController::class, 'index']);
+    // Wisata
+    Route::get('/wisata', [WisataApiController::class, 'index']);
+    Route::get('/wisata/{slug}', [WisataApiController::class, 'show']);
+    Route::get('/fasilitas/{slug}', [WisataApiController::class, 'facilities']);
 
-// Wisata
-Route::get('/wisata', [WisataApiController::class, 'index']);
-Route::get('/wisata/{slug}', [WisataApiController::class, 'show']);
-Route::get('/fasilitas/{slug}', [WisataApiController::class, 'facilities']);
-
-// Jadwal / Booking
-Route::get('/jadwal', [BookingApiController::class, 'locations']);
-Route::get('/booking/{slug}', [BookingApiController::class, 'byLocation']);
-Route::get('/booking/{slug}/{bulan}', [BookingApiController::class, 'byMonth']);
+    // Jadwal / Booking
+    Route::get('/jadwal', [BookingApiController::class, 'locations']);
+    Route::get('/booking/{slug}', [BookingApiController::class, 'byLocation']);
+    Route::get('/booking/{slug}/{bulan}', [BookingApiController::class, 'byMonth']);
+});
 
 
 // === AUTHENTICATED ROUTES (perlu login / token Sanctum) ===
