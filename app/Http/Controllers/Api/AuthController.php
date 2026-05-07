@@ -8,8 +8,9 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
+use Illuminate\Support\Str;
 use App\Models\User;
-use Laravel\Socialite\Facades\Socialite;
+use Google\Client as GoogleClient;
 
 class AuthController extends Controller
 {
@@ -133,58 +134,95 @@ class AuthController extends Controller
      */
     public function googleLogin(Request $request)
     {
-        try {
-            $request->validate([
-                'id_token' => 'required|string',
-            ]);
+        $request->validate([
+            'id_token' => 'required|string',
+        ]);
 
-            // Verify Google ID token using Socialite
-            $googleUser = Socialite::driver('google')->stateless()->userFromToken($request->id_token);
+        $clientId = config('services.google.client_id');
 
-            if (!$googleUser || !$googleUser->getEmail()) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Token Google tidak valid.',
-                ], 401);
-            }
-
-            // Cari user atau buat baru
-            $user = User::where('email', $googleUser->getEmail())->first();
-
-            if (!$user) {
-                $username = strtolower(str_replace(' ', '', $googleUser->getName()));
-                $originalUsername = $username;
-                $counter = 1;
-                while (User::where('username', $username)->exists()) {
-                    $username = $originalUsername . $counter;
-                    $counter++;
-                }
-
-                $user = User::create([
-                    'name' => $googleUser->getName(),
-                    'username' => $username,
-                    'email' => $googleUser->getEmail(),
-                    'password' => Hash::make(uniqid()),
-                ]);
-            }
-
-            $token = $user->createToken('mobile')->plainTextToken;
-
-            return response()->json([
-                'success' => true,
-                'message' => 'Login Google berhasil.',
-                'data' => [
-                    'user' => $user->only(['id', 'username', 'name', 'email', 'phone']),
-                    'token' => $token,
-                ],
-            ]);
-        } catch (\Exception $e) {
-            Log::error('Google Login API error: ' . $e->getMessage());
+        if (!$clientId) {
             return response()->json([
                 'success' => false,
-                'message' => 'Gagal login dengan Google.',
+                'message' => 'Konfigurasi Google Client ID belum tersedia.',
             ], 500);
         }
+
+        $client = new GoogleClient([
+            'client_id' => $clientId,
+        ]);
+
+        $payload = $client->verifyIdToken($request->id_token);
+
+        if (!$payload) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Token Google tidak valid.',
+            ], 401);
+        }
+
+        $email = $payload['email'] ?? null;
+        $name = $payload['name'] ?? null;
+        $picture = $payload['picture'] ?? null;
+
+        if (!$email) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Email Google tidak ditemukan.',
+            ], 422);
+        }
+
+        $user = User::where('email', $email)->first();
+
+        if (!$user) {
+            $baseUsername = strtolower(strtok($email, '@'));
+            $baseUsername = preg_replace('/[^a-z0-9._]/', '', $baseUsername);
+
+            if (!$baseUsername) {
+                $baseUsername = 'user';
+            }
+
+            $username = $baseUsername;
+            $counter = 1;
+
+            while (User::where('username', $username)->exists()) {
+                $username = $baseUsername . $counter;
+                $counter++;
+            }
+
+            $user = User::create([
+                'name' => $name ?: $email,
+                'username' => $username,
+                'email' => $email,
+                'phone' => null,
+                'password' => Hash::make(Str::random(32)),
+            ]);
+        } else {
+            // Jangan overwrite data user secara agresif.
+            // Cukup isi name jika masih kosong.
+            if (!$user->name && $name) {
+                $user->update([
+                    'name' => $name,
+                ]);
+            }
+        }
+
+        $token = $user->createToken('mobile-token')->plainTextToken;
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Login Google berhasil.',
+            'data' => [
+                'token' => $token,
+                'user' => [
+                    'id' => $user->id,
+                    'name' => $user->name,
+                    'username' => $user->username,
+                    'email' => $user->email,
+                    'phone' => $user->phone,
+                    'photo' => $picture,
+                ],
+            ],
+        ]);
     }
 
     /**
