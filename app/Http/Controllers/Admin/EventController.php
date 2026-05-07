@@ -34,10 +34,28 @@ class EventController extends Controller
             return $sub;
         });
 
-        $combined = $events->concat($submissions)->sortByDesc('id');
+        $sortBy = $request->get('sort_by', 'id');
+        $sortDir = $request->get('sort_dir', 'desc');
+        $allowedSorts = ['id', 'name_event', 'vendor', 'start_date'];
+        if (!in_array($sortBy, $allowedSorts)) $sortBy = 'id';
+        if (!in_array($sortDir, ['asc', 'desc'])) $sortDir = 'desc';
+
+        $combined = $events->concat($submissions);
+        $combined = $sortDir === 'asc' ? $combined->sortBy($sortBy)->values() : $combined->sortByDesc($sortBy)->values();
+
+        // Manual paginate collection
+        $perPage = 10;
+        $currentPage = \Illuminate\Pagination\LengthAwarePaginator::resolveCurrentPage();
+        $pagedData = $combined->slice(($currentPage - 1) * $perPage, $perPage)->values();
+        $combined = new \Illuminate\Pagination\LengthAwarePaginator(
+            $pagedData, $combined->count(), $perPage, $currentPage,
+            ['path' => $request->url(), 'query' => $request->query()]
+        );
 
         return view('admin.event.index', [
-            'combined' => $combined
+            'combined' => $combined,
+            'sortBy' => $sortBy,
+            'sortDir' => $sortDir,
         ]);
     }
 

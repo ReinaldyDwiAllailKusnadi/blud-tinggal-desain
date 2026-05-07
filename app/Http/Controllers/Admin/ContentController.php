@@ -10,6 +10,7 @@ use App\Models\Activity;
 use App\Models\ContentFeature;
 use App\Http\Requests\StoreContentRequest;
 use App\Http\Requests\UpdateContentRequest;
+use Illuminate\Support\Facades\Storage;
 
 class ContentController extends Controller
 {
@@ -21,9 +22,15 @@ class ContentController extends Controller
             $query->where('name', 'like', '%' . $request->search . '%');
         }
 
-        $contents = $query->orderBy('id', 'desc')->get();
+        $sortBy = $request->get('sort_by', 'id');
+        $sortDir = $request->get('sort_dir', 'desc');
+        $allowedSorts = ['id', 'name', 'price_weekday', 'location', 'created_at'];
+        if (!in_array($sortBy, $allowedSorts)) $sortBy = 'id';
+        if (!in_array($sortDir, ['asc', 'desc'])) $sortDir = 'asc';
 
-        return view('admin.content.index', compact('contents'));
+        $contents = $query->orderBy($sortBy, $sortDir)->paginate(10)->appends($request->query());
+
+        return view('admin.content.index', compact('contents', 'sortBy', 'sortDir'));
     }
 
     public function create()
@@ -70,37 +77,57 @@ class ContentController extends Controller
     public function update(UpdateContentRequest $request, Content $content)
     {
         try {
-        $data = $request->validated();
+            $data = $request->validated();
+            $oldImage = $content->image;
 
-        if (!empty($data['name'])) {
-            $data['slug'] = Str::slug($data['name'], '-');
-        }
+            if (!empty($data['name'])) {
+                $data['slug'] = Str::slug($data['name'], '-');
+            }
 
-        if ($request->hasFile('image')) {
-            $file = $request->file('image');
-            $imagePath = $file->store('assets/content', 'public_html_storage'); // simpan ke storage/app/public/content
-            $data['image'] = $imagePath;
-        }
+            if ($request->hasFile('image')) {
+                $file = $request->file('image');
+                $imagePath = $file->store('assets/content', 'public_html_storage'); // simpan ke storage/app/public/assets/content
+                $data['image'] = $imagePath;
+            }
 
-        $content->update($data);
-        Activity::create([
-            'admin_id' => auth('admin')->id(),
-            'description' => 'mengedit tempat wisata.',
-        ]);
+            $content->update($data);
 
-        \Illuminate\Support\Facades\Cache::forget('wisata_all');
+            // Bersihkan gambar lama jika ada upload baru dan bukan gambar seed
+            if ($request->hasFile('image') && $oldImage) {
+                if (str_starts_with($oldImage, 'assets/content/')) {
+                    if (Storage::disk('public_html_storage')->exists($oldImage)) {
+                        Storage::disk('public_html_storage')->delete($oldImage);
+                    }
+                }
+            }
 
-        return redirect()->route('content.index')->with('success', 'Konten berhasil diupdate.');
+            Activity::create([
+                'admin_id' => auth('admin')->id(),
+                'description' => 'mengedit tempat wisata.',
+            ]);
+
+            \Illuminate\Support\Facades\Cache::forget('wisata_all');
+
+            return redirect()->route('content.index')->with('success', 'Konten berhasil diupdate.');
         } catch (\Exception $e) {
-        return back()
-            ->withInput()
-            ->with('error', 'Terjadi kesalahan saat mengubah konten: ' . $e->getMessage());
+            return back()
+                ->withInput()
+                ->with('error', 'Terjadi kesalahan saat mengubah konten: ' . $e->getMessage());
         }
     }
 
     public function destroy(Content $content)
     {
+        $oldImage = $content->image;
+        
         $content->delete();
+
+        // Bersihkan gambar jika itu adalah file upload (assets/content/)
+        if ($oldImage && str_starts_with($oldImage, 'assets/content/')) {
+            if (Storage::disk('public_html_storage')->exists($oldImage)) {
+                Storage::disk('public_html_storage')->delete($oldImage);
+            }
+        }
 
         \Illuminate\Support\Facades\Cache::forget('wisata_all');
 

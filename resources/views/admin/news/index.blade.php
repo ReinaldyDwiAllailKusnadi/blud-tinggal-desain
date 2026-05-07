@@ -27,8 +27,8 @@
                     <tr class="bg-blue-300 text-white">
                         <th class="p-3">No</th>
                         <th class="p-3">Dokumentasi</th>
-                        <th class="p-3">Judul Berita</th>
-                        <th class="p-3">Tanggal</th>
+                        <th class="p-3"><x-sort-header column="title" label="Judul Berita" :sortBy="$sortBy" :sortDir="$sortDir" /></th>
+                        <th class="p-3"><x-sort-header column="upload_time" label="Tanggal" :sortBy="$sortBy" :sortDir="$sortDir" /></th>
                         <th class="p-3">Isi Berita</th>
                         <th class="p-3">Aksi</th>
                     </tr>
@@ -36,7 +36,7 @@
                 <tbody>
                     @forelse ($news as $newsItem)
                         <tr class="border-b">
-                            <td class="p-3 text-center align-middle">{{ $loop->iteration}}</td>
+                            <td class="p-3 text-center align-middle">{{ $news->firstItem() + $loop->index }}</td>
                             <td class="p-3 text-center align-middle">
                                 @if ($newsItem->image)
                                     <a href="{{ asset($newsItem->image) }}" target="_blank">
@@ -105,6 +105,7 @@
                     @endforelse
                 </tbody>
             </table>
+            {{ $news->links('vendor.pagination.tailwind') }}
         </div>
 
     <script>

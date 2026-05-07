@@ -32,6 +32,7 @@ class ProfileApiController extends Controller
 
             $request->validate([
                 'name' => 'required|string|max:255',
+                'username' => 'required|string|max:255|unique:users,username,' . $user->id,
                 'email' => 'required|email|max:255|unique:users,email,' . $user->id,
                 'phone' => 'nullable|string|max:20',
                 'password' => 'nullable|min:8',
@@ -39,6 +40,7 @@ class ProfileApiController extends Controller
 
             $updateData = [
                 'name' => $request->name,
+                'username' => $request->username,
                 'email' => $request->email,
                 'phone' => $request->phone,
             ];

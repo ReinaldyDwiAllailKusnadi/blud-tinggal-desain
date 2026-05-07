@@ -23,6 +23,7 @@ class Content extends Model
         'location_embed',
         'image',
         'instagram',
+        'tiktok',
         'whatsapp',
     ];
 
@@ -35,8 +36,6 @@ class Content extends Model
     {
         return $this->hasMany(Submission::class, 'name');
     }
-
-    protected $guarded = [];
 
     public function features()
     {

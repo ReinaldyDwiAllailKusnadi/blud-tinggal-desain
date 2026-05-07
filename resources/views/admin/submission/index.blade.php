@@ -45,10 +45,10 @@
       <thead>
         <tr class="bg-blue-300 dark:bg-blue-900 text-white">
           <th class="p-3">No</th>
-          <th class="p-3">ID</th>
-          <th class="p-3">Kegiatan</th>
-          <th class="p-3">Pengajuan</th>
-          <th class="p-3">Pengusul</th>
+          <th class="p-3"><x-sort-header column="id" label="ID" :sortBy="$sortBy" :sortDir="$sortDir" /></th>
+          <th class="p-3"><x-sort-header column="name_event" label="Kegiatan" :sortBy="$sortBy" :sortDir="$sortDir" /></th>
+          <th class="p-3"><x-sort-header column="created_at" label="Pengajuan" :sortBy="$sortBy" :sortDir="$sortDir" /></th>
+          <th class="p-3"><x-sort-header column="vendor" label="Pengusul" :sortBy="$sortBy" :sortDir="$sortDir" /></th>
           <th class="p-3">Lampiran</th>
           <th class="p-3">Detail</th>
           <th class="p-3">Aksi</th>
@@ -57,7 +57,7 @@
       <tbody>
         @forelse ($submissions as $sub)
           <tr class="border-b">
-            <td class="p-3 text-center">{{ $loop->iteration }}</td>
+            <td class="p-3 text-center">{{ $submissions->firstItem() + $loop->index }}</td>
             <td class="p-3 text-center">{{ $sub->id }}</td>
             <td class="p-3">{{ $sub->name_event }}</td>
             <td class="p-3">{{ $sub->apply_date }}</td>
@@ -236,6 +236,7 @@
         @endforelse
       </tbody>
     </table>
+    {{ $submissions->links('vendor.pagination.tailwind') }}
   </div>
 </main>
   <script>

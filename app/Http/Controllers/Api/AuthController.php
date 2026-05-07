@@ -21,6 +21,7 @@ class AuthController extends Controller
         try {
             $request->validate([
                 'name' => 'required|string|min:3|max:255',
+                'username' => 'nullable|string|min:3|max:255|unique:users',
                 'phone' => [
                     'nullable',
                     'string',
@@ -32,15 +33,22 @@ class AuthController extends Controller
             ], [
                 'name.min' => 'Nama minimal harus 3 huruf.',
                 'phone.regex' => 'Nomor HP harus diawali dengan 08 atau 628.',
+                'username.unique' => 'Username sudah digunakan.',
+                'email.unique' => 'Email sudah digunakan.',
             ]);
 
-            // Auto-generate unique username
-            $username = strtolower(str_replace(' ', '', $request->name));
-            $originalUsername = $username;
-            $counter = 1;
-            while (User::where('username', $username)->exists()) {
-                $username = $originalUsername . $counter;
-                $counter++;
+            // Gunakan username dari request jika ada, jika tidak generate otomatis
+            if ($request->has('username') && !empty($request->username)) {
+                $username = $request->username;
+            } else {
+                // Auto-generate unique username
+                $username = strtolower(str_replace(' ', '', $request->name));
+                $originalUsername = $username;
+                $counter = 1;
+                while (User::where('username', $username)->exists()) {
+                    $username = $originalUsername . $counter;
+                    $counter++;
+                }
             }
 
             $user = User::create([

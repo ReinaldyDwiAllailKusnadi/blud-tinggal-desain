@@ -1,29 +1,33 @@
-# PROYEK BLUD PARIWISATA: STATUS & HANDOVER UNTUK AGENT
+# AGENT HANDOVER (BLUD PARIWISATA)
+*Timestamp: 30 April 2026, 19:32*
 
-Halo Agent! Ini adalah ringkasan konteks lengkap dari proyek *BLUD Pariwisata* (Skripsi) yang sedang berjalan. Mohon baca dengan teliti dan pahami arsitekturnya sebelum melakukan tindakan atau menyarankan modifikasi kode.
+## 📍 Konteks Terkini
+Proyek sedang dalam tahap pemolesan UI Flutter dan penyelesaian integrasi API.
 
-## 1. Arsitektur Proyek
-Proyek ini terdiri dari dua sistem yang saling terhubung:
-*   **Backend (Laravel 12+)**: Berfungsi sebagai penyedia REST API dan dashboard Web Admin (Blade). Saat ini sudah mengudara (*live*) di hosting cPanel dengan domain `https://bludtesting.my.id`. Direktori lokal: `f:\skripsiii\bellllud`.
-*   **Frontend Mobile (Flutter)**: Aplikasi mobile *end-user* untuk *booking* tiket dan informasi wisata. Terkoneksi ke API *production* tersebut. Direktori lokal: `f:\skripsiii\flutter_app`.
+## 🛠️ Pekerjaan Terakhir (Sesi Ini)
+1.  **Flutter UI Auth (Welcome, Login, Register)**:
+    *   Konversi 100% dari TSX ke Flutter native.
+    *   Hapus mockup phone frame (Center-Container fixed) menjadi Native Full-Screen.
+    *   Hapus Fake iOS Status Bar.
+    *   Buat `shared_auth_widgets.dart` untuk komponen DRY.
+2.  **API Integration**:
+    *   Wire-up tombol di ketiga screen auth ke `AuthProvider`.
+    *   Handling Loading & Error (SnackBar).
+3.  **Documentation**:
+    *   Update `agent.md` dengan status terbaru.
 
-## 2. Penanganan Aset & Gambar (PENTING)
-Sebelumnya terjadi kendala di mana gambar tempat wisata baru (hasil *upload* Admin) terkena error 404 atau *EncodingError* di Flutter karena percampuran path penyimpanan di Shared Hosting.
-*   **Solusi Final (Telah Aktif)**: *User* telah mengakalinya menggunakan *Symlink* via Cronjob cPanel yang spesifik langsung menargetkan isi folder.
-    *   *Perintah Symlink Server*: `ln -s /home/bludtest/laravel/storage/app/public/assets/content /home/bludtest/public_html/assets/content`
-*   **Aturan Kode (JANGAN DIUBAH)**: Karena *symlink* tersebut, logika pada Controller API dan Blade View saat ini **sangat disederhanakan** murni menggunakan helper `url($item->image)` atau `asset($item->image)`. **Tolong jangan sarankan untuk menambahkan logika pengecekan folder `storage/` atau *ternary logic* lagi, karena kodingan saat ini sudah terbukti bekerja 100% sempurna di Flutter.**
+## 📁 File Penting & Lokasi
+*   **Flutter Auth**: `lib/screens/auth/`
+*   **Flutter Shared**: `lib/screens/auth/shared_auth_widgets.dart`
+*   **Laravel API**: `app/Http/Controllers/Api/AuthController.php`
+*   **Laravel Routes**: `routes/api.php`
 
-## 3. Tugas / Blocker Saat Ini (The Active Task)
-Saat *user* mencoba meng-edit atau menambahkan data tempat wisata di Web Admin, muncul error dari sisi Database:
-```sql
-SQLSTATE[42S22]: Column not found: 1054 Unknown column 'whatsapp' in 'SET' (Connection: mysql, SQL: update `content` set `whatsapp` = https://wa.me/087666352633 ... where `id` = 9).
-```
+## ⚠️ Peringatan (Blocker & Risks)
+*   **Database Sync**: Masih ada issue kolom `whatsapp` yang belum ada di tabel `content`. Perlu eksekusi migrasi di hosting.
+*   **API Base URL**: Di `lib/core/constants/constants.dart`, `baseUrl` masih menunjuk ke production. Jika user ingin tes lokal, ganti ke `10.0.2.2:8000`.
+*   **CORS**: Isu CORS di Flutter Web (Chrome) masih ada, ingatkan user untuk tes di Android Emulator.
 
-### Panduan untuk Agent Baru:
-Tugas kamu sekarang adalah memandu *user* membereskan fitur WhatsApp ini dari sisi Backend hingga ke Frontend Flutter. Langkah yang harus kamu tempuh:
-1.  **Selesaikan Error Database**: Pandu user untuk membuat file *Migration* (contoh: `php artisan make:migration add_whatsapp_to_contents_table`) untuk menambahkan kolom `whatsapp` (tipe string, *nullable*) ke tabel `content`.
-2.  **Cek Model Laravel**: Pastikan kolom `whatsapp` sudah ditambahkan ke dalam `$fillable` di file `app/Models/Content.php`.
-3.  **Eksekusi di Hosting**: Instruksikan *user* bagaimana cara menjalankan *migration* tersebut di database cPanel (bisa via phpMyAdmin atau Terminal cPanel).
-4.  **Update Sisi Flutter**: Setelah API berhasil mengirim field `whatsapp`, pandu *user* untuk meng-update `ContentModel` di Flutter (file `models.dart`) agar properti WhatsApp bisa ditangkap dan ditampilkan menjadi tombol "*Hubungi via WhatsApp*" di tampilan aplikasinya.
-
-Selamat bekerja, dan pastikan setiap langkah instruksi jelas dan mudah diikuti oleh *user*!
+## 🚀 Langkah Selanjutnya
+1.  Perbaiki kolom `whatsapp` di database Laravel.
+2.  Lanjutkan desain halaman **Home** dan **Detail Wisata** di Flutter agar memiliki kualitas estetik yang sama dengan Auth Screen baru.
+3.  Implementasi *Empty States* di Web Admin.

@@ -18,9 +18,15 @@ class AccountController extends Controller
             $query->where('username', 'like', '%' . $request->search . '%');
         }
 
-        $admins = $query->orderBy('id', 'asc')->get();
+        $sortBy = $request->get('sort_by', 'id');
+        $sortDir = $request->get('sort_dir', 'asc');
+        $allowedSorts = ['id', 'username', 'name', 'email', 'created_at'];
+        if (!in_array($sortBy, $allowedSorts)) $sortBy = 'id';
+        if (!in_array($sortDir, ['asc', 'desc'])) $sortDir = 'asc';
 
-        return view('admin.account.index', compact('admins'));
+        $admins = $query->orderBy($sortBy, $sortDir)->paginate(10)->appends($request->query());
+
+        return view('admin.account.index', compact('admins', 'sortBy', 'sortDir'));
     }
 
 

@@ -19,9 +19,15 @@ class NewsController extends Controller
             $query->where('title', 'like', '%' . $request->search . '%');
         }
 
-        $news = $query->orderBy('id', 'desc')->get();
+        $sortBy = $request->get('sort_by', 'id');
+        $sortDir = $request->get('sort_dir', 'desc');
+        $allowedSorts = ['id', 'title', 'upload_time', 'source'];
+        if (!in_array($sortBy, $allowedSorts)) $sortBy = 'id';
+        if (!in_array($sortDir, ['asc', 'desc'])) $sortDir = 'desc';
 
-        return view('admin.news.index', compact('news'));
+        $news = $query->orderBy($sortBy, $sortDir)->paginate(10)->appends($request->query());
+
+        return view('admin.news.index', compact('news', 'sortBy', 'sortDir'));
     }
 
     public function create()

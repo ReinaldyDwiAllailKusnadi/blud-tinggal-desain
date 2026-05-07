@@ -24,7 +24,7 @@ class ContentFeature  extends Model
     public function content()
     {
         // foreign key di anak: "location"
-        return $this->belongsTo(Content::class, 'name');
+        return $this->belongsTo(Content::class, 'location');
     }
 
     

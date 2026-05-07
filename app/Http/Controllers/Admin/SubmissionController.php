@@ -9,6 +9,7 @@ use App\Models\Content;
 use Carbon\Carbon; 
 use App\Mail\BookingStatusMail;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Log;
 
 class SubmissionController extends Controller
 {
@@ -26,10 +27,16 @@ class SubmissionController extends Controller
             $query->whereMonth('created_at', $request->month);
         }
 
-        $submissions = $query->orderBy('id', 'desc')->get();
+        $sortBy = $request->get('sort_by', 'id');
+        $sortDir = $request->get('sort_dir', 'desc');
+        $allowedSorts = ['id', 'vendor', 'name_event', 'created_at', 'location'];
+        if (!in_array($sortBy, $allowedSorts)) $sortBy = 'id';
+        if (!in_array($sortDir, ['asc', 'desc'])) $sortDir = 'desc';
+
+        $submissions = $query->orderBy($sortBy, $sortDir)->paginate(10)->appends($request->query());
         $contents = Content::all();
         
-        return view('admin.submission.index', compact('submissions', 'contents'));
+        return view('admin.submission.index', compact('submissions', 'contents', 'sortBy', 'sortDir'));
     }
 
     public function exportPdf(Request $request)
@@ -62,10 +69,16 @@ class SubmissionController extends Controller
             $query->whereMonth('created_at', $request->month);
         }
 
-        $submissions = $query->orderBy('id', 'desc')->get();
+        $sortBy = $request->get('sort_by', 'id');
+        $sortDir = $request->get('sort_dir', 'desc');
+        $allowedSorts = ['id', 'vendor', 'name_event', 'created_at', 'location'];
+        if (!in_array($sortBy, $allowedSorts)) $sortBy = 'id';
+        if (!in_array($sortDir, ['asc', 'desc'])) $sortDir = 'desc';
+
+        $submissions = $query->orderBy($sortBy, $sortDir)->paginate(10)->appends($request->query());
         $contents = Content::all();
 
-        return view('admin.submission.approved', compact('submissions', 'contents'));
+        return view('admin.submission.approved', compact('submissions', 'contents', 'sortBy', 'sortDir'));
     }
 
     public function rejected(Request $request)
@@ -82,10 +95,16 @@ class SubmissionController extends Controller
             $query->whereMonth('created_at', $request->month);
         }
 
-        $submissions = $query->orderBy('id', 'desc')->get();
+        $sortBy = $request->get('sort_by', 'id');
+        $sortDir = $request->get('sort_dir', 'desc');
+        $allowedSorts = ['id', 'vendor', 'name_event', 'created_at', 'location'];
+        if (!in_array($sortBy, $allowedSorts)) $sortBy = 'id';
+        if (!in_array($sortDir, ['asc', 'desc'])) $sortDir = 'desc';
+
+        $submissions = $query->orderBy($sortBy, $sortDir)->paginate(10)->appends($request->query());
         $contents = Content::all();
 
-        return view('admin.submission.rejected', compact('submissions', 'contents'));
+        return view('admin.submission.rejected', compact('submissions', 'contents', 'sortBy', 'sortDir'));
     }
 
     public function approve($id)
@@ -94,33 +113,57 @@ class SubmissionController extends Controller
         $submission->status = 'approved';
         $submission->save();
 
-    // kirim email ke user
-    if ($submission->user && $submission->user->email) {
-        Mail::to($submission->user->email)
-            ->send(new BookingStatusMail($submission, 'approved'));
-    }
+        try {
+            // kirim email ke user
+            if ($submission->user && $submission->user->email) {
+                Mail::to($submission->user->email)
+                    ->send(new BookingStatusMail($submission, 'approved'));
+            }
 
-        return redirect()->back()->with('success', 'Pengajuan disetujui dan email terkirim.');
+            return redirect()->back()->with('success', 'Pengajuan disetujui dan email notifikasi berhasil dikirim.');
+        } catch (\Throwable $e) {
+            Log::warning('Email notifikasi approval gagal dikirim', [
+                'submission_id' => $submission->id,
+                'user_id' => $submission->user_id,
+                'error' => $e->getMessage(),
+            ]);
+
+            return redirect()->back()
+                ->with('success', 'Pengajuan berhasil disetujui.')
+                ->with('warning', 'Namun email notifikasi gagal dikirim. Silakan cek konfigurasi email.');
+        }
     }
 
     public function reject(Request $request, $id)
     {
         $request->validate([
-        'notes' => 'required|string|max:1000',
-    ]);
+            'notes' => 'required|string|max:1000',
+        ]);
 
-    $submission = Submission::findOrFail($id);
-    $submission->status = 'rejected';
-    $submission->notes = $request->notes;
-    $submission->save();
+        $submission = Submission::findOrFail($id);
+        $submission->status = 'rejected';
+        $submission->notes = $request->notes;
+        $submission->save();
 
-    // kirim email ke user
-    if ($submission->user && $submission->user->email) {
-        Mail::to($submission->user->email)
-            ->send(new BookingStatusMail($submission, 'rejected'));
-    }
+        try {
+            // kirim email ke user
+            if ($submission->user && $submission->user->email) {
+                Mail::to($submission->user->email)
+                    ->send(new BookingStatusMail($submission, 'rejected'));
+            }
 
-        return redirect()->back()->with('success', 'Pengajuan ditolak dan email terkirim.');
+            return redirect()->back()->with('success', 'Pengajuan ditolak dan email notifikasi berhasil dikirim.');
+        } catch (\Throwable $e) {
+            Log::warning('Email notifikasi rejection gagal dikirim', [
+                'submission_id' => $submission->id,
+                'user_id' => $submission->user_id,
+                'error' => $e->getMessage(),
+            ]);
+
+            return redirect()->back()
+                ->with('success', 'Pengajuan berhasil ditolak.')
+                ->with('warning', 'Namun email notifikasi gagal dikirim. Silakan cek konfigurasi email.');
+        }
     }
 
 

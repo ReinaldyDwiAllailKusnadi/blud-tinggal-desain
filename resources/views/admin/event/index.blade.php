@@ -26,9 +26,9 @@
                 <thead>
                     <tr class="bg-blue-300 text-white">
                         <th class="p-3">No</th>
-                        <th class="p-3">Nama Event</th>
-                        <th class="p-3">Tanggal</th>
-                        <th class="p-3">Nama Penyewa/Instansi</th>
+                        <th class="p-3"><x-sort-header column="name_event" label="Nama Event" :sortBy="$sortBy" :sortDir="$sortDir" /></th>
+                        <th class="p-3"><x-sort-header column="start_date" label="Tanggal" :sortBy="$sortBy" :sortDir="$sortDir" /></th>
+                        <th class="p-3"><x-sort-header column="vendor" label="Nama Penyewa/Instansi" :sortBy="$sortBy" :sortDir="$sortDir" /></th>
                         <th class="p-3">Rundown</th>
                         <th class="p-3">Aksi</th>
                     </tr>
@@ -36,7 +36,7 @@
                     <tbody>
                     @forelse ($combined as $item)
                         <tr class="border-b">
-                            <td class="p-3 text-center align-middle">{{ $loop->iteration }}</td>
+                            <td class="p-3 text-center align-middle">{{ $combined->firstItem() + $loop->index }}</td>
                             <td class="p-3 text-center align-middle">{{ $item->name_event }}</td>
                             <td class="p-3 text-center align-middle">
                                 {{ \Carbon\Carbon::parse($item->start_date ?? $item->created_at)->format('d/m/Y') }}
@@ -92,6 +92,7 @@
                     @endforelse
                 </tbody>
             </table>
+            {{ $combined->links('vendor.pagination.tailwind') }}
         </div>
 
     <script>

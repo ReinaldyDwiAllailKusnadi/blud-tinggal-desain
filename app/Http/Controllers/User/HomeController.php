@@ -198,57 +198,69 @@ class HomeController extends Controller
     public function storeSubmission(Request $request)
     {
         try {
-         $data = $request->validate([
-        'namePIC'=>'required|string|max:100',
-        'no_hp'=>'required|string|max:12',
-        'address'=>'required|string|max:255',
-        'vendor' => 'required|string|max:100',
-        'location'  => 'required|exists:content,name',
-        'start_date' => 'required|date',
-        'end_date' => 'required|date',
-        'name_event' => 'required|string|max:255',
-        'file' => 'file|mimes:pdf|max:5048',
-        'ktp' => 'required|file|mimes:pdf|max:5048',
-        'appl_letter' => 'file|mimes:pdf|max:5048',
-        'actv_letter' => 'file|mimes:pdf|max:5048',
-        ]);
+            $rules = [
+                'namePIC' => 'required|string|max:100',
+                'no_hp' => 'required|string|max:12',
+                'address' => 'required|string|max:255',
+                'vendor' => 'required|string|max:100',
+                'location' => 'required|exists:content,name',
+                'start_date' => 'required|date',
+                'end_date' => 'required|date',
+                'name_event' => 'required|string|max:255',
+                'file' => 'nullable|file|mimes:pdf|max:5120',
+                'ktp' => 'required|file|mimes:pdf,jpg,jpeg,png|max:5120',
+                'appl_letter' => 'nullable|file|mimes:pdf|max:5120',
+                'actv_letter' => 'nullable|file|mimes:pdf|max:5120',
+            ];
 
-        $data['user_id'] = auth()->id();
-        $content = Content::where('name', $data['location'])->firstOrFail();
+            $messages = [
+                'file.mimes' => 'File proposal harus berformat PDF.',
+                'file.max' => 'File proposal maksimal 5MB.',
+                'ktp.required' => 'File KTP wajib diunggah.',
+                'ktp.mimes' => 'File KTP harus berformat PDF, JPG, JPEG, atau PNG.',
+                'ktp.max' => 'File KTP maksimal 5MB.',
+                'appl_letter.mimes' => 'Surat permohonan harus berformat PDF.',
+                'appl_letter.max' => 'Surat permohonan maksimal 5MB.',
+                'actv_letter.mimes' => 'Surat keterangan kegiatan harus berformat PDF.',
+                'actv_letter.max' => 'Surat keterangan kegiatan maksimal 5MB.',
+                'location.exists' => 'Lokasi yang dipilih tidak valid.',
+            ];
 
-        $data['status'] = 'pending';
-        $data['apply_date'] = Carbon::now()->format('Y-m-d H:i');
+            $data = $request->validate($rules, $messages);
 
-        if ($request->hasFile('file')) {
-            $file = $request->file('file');
-            $filePath = $file->store('assets/rundowns', 'public_html_storage');
-            $data['file'] = $filePath;
-        }
-        if ($request->hasFile('ktp')) {
-            $ktpFile = $request->file('ktp');
-            $ktpPath = $ktpFile->store('assets/ktp', 'public_html_storage');
-            $data['ktp'] = $ktpPath;
-        }
-        if ($request->hasFile('appl_letter')) {
-            $applLetterFile = $request->file('appl_letter');
-            $applLetterPath = $applLetterFile->store('assets/appl_letters', 'public_html_storage');
-            $data['appl_letter'] = $applLetterPath;
-        }
-        if ($request->hasFile('actv_letter')) {
-            $actvLetterFile = $request->file('actv_letter');
-            $actvLetterPath = $actvLetterFile->store('assets/actv_letters', 'public_html_storage');
-            $data['actv_letter'] = $actvLetterPath;
-        }
+            $data['user_id'] = auth()->id();
+            $content = Content::where('name', $data['location'])->firstOrFail();
 
-        $data['notes'] = $request->input('notes', null);
+            $data['status'] = 'pending';
+            $data['apply_date'] = Carbon::now()->format('Y-m-d H:i');
 
-        Submission::create($data);
+            if ($request->hasFile('file')) {
+                $data['file'] = $request->file('file')->store('assets/rundowns', 'public_html_storage');
+            }
+            if ($request->hasFile('ktp')) {
+                $data['ktp'] = $request->file('ktp')->store('assets/ktp', 'public_html_storage');
+            }
+            if ($request->hasFile('appl_letter')) {
+                $data['appl_letter'] = $request->file('appl_letter')->store('assets/appl_letters', 'public_html_storage');
+            }
+            if ($request->hasFile('actv_letter')) {
+                $data['actv_letter'] = $request->file('actv_letter')->store('assets/actv_letters', 'public_html_storage');
+            }
 
-        return redirect()->route('user.history')->with('success', 'Pengajuan berhasil harap tunggu informasi lebih lanjut.');
+            $data['notes'] = $request->input('notes', null);
+
+            Submission::create($data);
+
+            return redirect()->route('user.history')->with('success', 'Pengajuan berhasil dikirim. Harap tunggu informasi lebih lanjut.');
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return back()
+                ->withErrors($e->validator)
+                ->withInput()
+                ->with('error', $e->validator->errors()->first());
         } catch (\Exception $e) {
-        return back()
-            ->withInput()
-            ->with('error', 'Terjadi kesalahan saat mengubah konten: ' . $e->getMessage());
+            return back()
+                ->withInput()
+                ->with('error', 'Terjadi kesalahan sistem: ' . $e->getMessage());
         }
     }
 }

@@ -26,11 +26,11 @@
                 <thead>
                     <tr class="bg-blue-300 dark:bg-slate-700 text-white dark:text-slate-50">
                         <th class="p-3">No</th>
-                        <th class="p-3">Nama Tempat</th>
-                        <th class="p-3">Harga Tiket</th>
+                        <th class="p-3"><x-sort-header column="name" label="Nama Tempat" :sortBy="$sortBy" :sortDir="$sortDir" /></th>
+                        <th class="p-3"><x-sort-header column="price_weekday" label="Harga Tiket" :sortBy="$sortBy" :sortDir="$sortDir" /></th>
                         <th class="p-3">Jam Operasional</th>
-                        <th class="p-3">Lokasi</th>
-                        <th class="p-3">foto</th>
+                        <th class="p-3"><x-sort-header column="location" label="Lokasi" :sortBy="$sortBy" :sortDir="$sortDir" /></th>
+                        <th class="p-3">Foto</th>
                         <th class="p-3">Deskripsi</th>
                         <th class="p-3">Aksi</th>
                     </tr>
@@ -38,7 +38,7 @@
                 <tbody>
                     @forelse ($contents as $content)
                         <tr class="border-b dark:border-slate-700 text-gray-800 dark:text-slate-300">
-                            <td class="p-3 text-center align-middle">{{ $loop->iteration }}</td>
+                            <td class="p-3 text-center align-middle">{{ $contents->firstItem() + $loop->index }}</td>
                             <td class="p-3 text-center align-middle">{{ $content->name }}</td>
                             <td class="p-3 text-center align-middle">Rp{{ $content->price_weekday }}</td>
                             <td class="p-3 text-center align-middle">
@@ -110,6 +110,7 @@
                     @endforelse
                 </tbody>
             </table>
+            {{ $contents->links('vendor.pagination.tailwind') }}
         </div>
 
     <script>

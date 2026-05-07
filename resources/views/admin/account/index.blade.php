@@ -28,9 +28,9 @@
                 <thead>
                     <tr class="bg-blue-300 text-white">
                         <th class="p-3">No</th>
-                        <th class="p-3">AdminID</th>
-                        <th class="p-3">Username Admin</th>
-                        <th class="p-3">Activate Date</th>
+                        <th class="p-3"><x-sort-header column="id" label="AdminID" :sortBy="$sortBy" :sortDir="$sortDir" /></th>
+                        <th class="p-3"><x-sort-header column="username" label="Username Admin" :sortBy="$sortBy" :sortDir="$sortDir" /></th>
+                        <th class="p-3"><x-sort-header column="created_at" label="Activate Date" :sortBy="$sortBy" :sortDir="$sortDir" /></th>
                         <th class="p-3">Identitas Pengguna</th>
                         <th class="p-3">Aksi</th>
                     </tr>
@@ -38,7 +38,7 @@
                 <tbody>
                     @forelse ($admins as $admin)
                         <tr class="border-b">
-                            <td class="p-3 text-center align-middle">{{ $loop->iteration }}</td>
+                            <td class="p-3 text-center align-middle">{{ $admins->firstItem() + $loop->index }}</td>
                             <td class="p-3 text-center align-middle">{{ $admin->id }}</td>
                             <td class="p-3 text-left align-middle">{{ $admin->username }}</td>
                             <td class="p-3 text-center align-middle">
@@ -79,6 +79,7 @@
                     @endforelse
                 </tbody>
             </table>
+            {{ $admins->links('vendor.pagination.tailwind') }}
         </div>
     </main>
 </div>

@@ -16,21 +16,35 @@ class AccountUserController extends Controller
             $query->where('username', 'like', '%' . $request->search . '%');
         }
 
-        $users = $query->orderBy('id', 'asc')->get();
+        $sortBy = $request->get('sort_by', 'id');
+        $sortDir = $request->get('sort_dir', 'asc');
+        $allowedSorts = ['id', 'username', 'name', 'email', 'activated_at'];
+        if (!in_array($sortBy, $allowedSorts)) $sortBy = 'id';
+        if (!in_array($sortDir, ['asc', 'desc'])) $sortDir = 'asc';
 
-        return view('admin.user.index', compact('users'));
+        $users = $query->orderBy($sortBy, $sortDir)->paginate(10)->appends($request->query());
+
+        return view('admin.user.index', compact('users', 'sortBy', 'sortDir'));
     }
     public function update(Request $request, User $user)
     {
-        $request->validate([
-            'name' => 'required|string',
-            'email' => 'required|email',
-            'phone' => 'required|string',
+        $data = $request->validate([
+            'username' => 'required|string|max:255|unique:users,username,' . $user->id,
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|unique:users,email,' . $user->id,
+            'phone' => 'nullable|string|max:20',
+            'password' => 'nullable|string|min:6',
         ]);
 
-        $user->update($request->only(['name', 'email', 'phone']));
+        if ($request->filled('password')) {
+            $data['password'] = \Illuminate\Support\Facades\Hash::make($request->password);
+        } else {
+            unset($data['password']);
+        }
 
-        return redirect()->route('user.index')->with('success', 'Data berhasil diupdate.');
+        $user->update($data);
+
+        return redirect()->route('user.index')->with('success', 'Data pengguna berhasil diperbarui.');
     }
     
     public function destroy(User $user)

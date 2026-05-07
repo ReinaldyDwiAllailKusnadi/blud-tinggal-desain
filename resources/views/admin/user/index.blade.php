@@ -21,9 +21,9 @@
                 <thead>
                     <tr class="bg-blue-300 text-white">
                         <th class="p-3">No</th>
-                        <th class="p-3">UserID</th>
-                        <th class="p-3">Username Account</th>
-                        <th class="p-3">Activate Date</th>
+                        <th class="p-3"><x-sort-header column="id" label="UserID" :sortBy="$sortBy" :sortDir="$sortDir" /></th>
+                        <th class="p-3"><x-sort-header column="username" label="Username Account" :sortBy="$sortBy" :sortDir="$sortDir" /></th>
+                        <th class="p-3"><x-sort-header column="activated_at" label="Activate Date" :sortBy="$sortBy" :sortDir="$sortDir" /></th>
                         <th class="p-3">Identitas Pengguna</th>
                         <th class="p-3">Aksi</th>
                     </tr>
@@ -31,7 +31,7 @@
                 <tbody>
                     @forelse ($users as $user)
                         <tr class="border-b">
-                            <td class="p-3 text-center align-middle">{{ $loop->iteration }}</td>
+                            <td class="p-3 text-center align-middle">{{ $users->firstItem() + $loop->index }}</td>
                             <td class="p-3 text-center align-middle">{{ $user->id }}</td>
                             <td class="p-3 text-left align-middle">{{ $user->username }}</td>
                             <td class="p-3 text-center align-middle">
@@ -51,6 +51,7 @@
                                             showModal = true;
                                             user = {
                                                 id: '{{ $user->id }}',
+                                                username: '{{ $user->username }}',
                                                 name: '{{ $user->name }}',
                                                 email: '{{ $user->email }}',
                                                 phone: '{{ $user->phone }}'
@@ -73,37 +74,52 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="6" class="text-center p-4 text-gray-500">Data admin belum tersedia.</td>
+                            <td colspan="6" class="text-center p-4 text-gray-500">Data pengguna belum tersedia.</td>
                         </tr>
                     @endforelse
                 </tbody>
             </table>
+            {{ $users->links('vendor.pagination.tailwind') }}
         </div>
 
         <!-- Modal Edit User -->
         <div x-show="showModal" class="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50" style="display: none;">
-            <div @click.away="showModal = false" class="bg-white p-6 rounded-lg w-full max-w-md">
+            <div @click.away="showModal = false" class="bg-white p-6 rounded-lg w-full max-w-md max-h-[90vh] overflow-y-auto">
                 <h2 class="text-xl font-semibold mb-4">Edit Data Pengguna</h2>
                 <form :action="'{{ url('admin/user') }}/' + user.id" method="POST">
                     @csrf
                     @method('PUT')
 
                     <div class="mb-4">
-                        <label class="block text-sm font-semibold">Nama User</label>
+                        <label class="block text-sm font-semibold">Username Account</label>
+                        <input type="text" name="username" x-model="user.username" class="w-full border p-2 rounded bg-gray-100" required>
+                        <p class="text-xs text-gray-500 mt-1">* Digunakan untuk login aplikasi</p>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="block text-sm font-semibold">Nama Lengkap</label>
                         <input type="text" name="name" x-model="user.name" class="w-full border p-2 rounded" required>
                     </div>
+
                     <div class="mb-4">
                         <label class="block text-sm font-semibold">Email</label>
                         <input type="email" name="email" x-model="user.email" class="w-full border p-2 rounded" required>
                     </div>
+
                     <div class="mb-4">
-                        <label class="block text-sm font-semibold">No Telepon</label>
-                        <input type="text" name="phone" x-model="user.phone" class="w-full border p-2 rounded" required>
+                        <label class="block text-sm font-semibold">No Telepon / WhatsApp</label>
+                        <input type="text" name="phone" x-model="user.phone" class="w-full border p-2 rounded">
                     </div>
 
-                    <div class="flex justify-end space-x-2 mt-4">
-                        <button type="button" @click="showModal = false" class="bg-gray-300 px-4 py-2 rounded">Batal</button>
-                        <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded">Simpan</button>
+                    <div class="mb-4">
+                        <label class="block text-sm font-semibold">Password Baru (Opsional)</label>
+                        <input type="password" name="password" class="w-full border p-2 rounded" placeholder="Kosongkan jika tidak ingin diubah">
+                        <p class="text-xs text-gray-500 mt-1">* Minimal 6 karakter</p>
+                    </div>
+
+                    <div class="flex justify-end space-x-2 mt-6">
+                        <button type="button" @click="showModal = false" class="bg-gray-300 hover:bg-gray-400 px-4 py-2 rounded">Batal</button>
+                        <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded">Simpan Perubahan</button>
                     </div>
                 </form>
             </div>

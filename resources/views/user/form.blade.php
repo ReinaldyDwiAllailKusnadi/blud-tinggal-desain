@@ -99,7 +99,7 @@
 
             <div class="mb-4">
                 <label for="ktp" class="block font-medium mb-1">KTP *</label>
-                <input type="file" name="ktp" id="ktp" accept=".pdf" class="w-full border px-4 py-2 rounded" required 
+                <input type="file" name="ktp" id="ktp" accept=".pdf,.jpg,.jpeg,.png" class="w-full border px-4 py-2 rounded" required 
                     onchange="
                         const errorMsg = document.getElementById('ktp-error');
                         if(this.files[0].size > 5*1024*1024){
@@ -142,10 +142,13 @@
                     <span id="actv-error" class="text-red-500 text-sm"></span>
             </div>
             <p class="text-sm text-red-600 px-4 py-2 rounded-lg mt-2">
-                ⚠️ Dokumen yang diunggah harus berformat <strong>PDF</strong>.
+                ⚠️ Khusus <strong>KTP</strong> boleh berformat <strong>PDF, JPG, JPEG, atau PNG</strong>.
             </p>
-            <p class="text-sm text-red-600 px-4 py-2 rounded-lg mt-2">
-                ⚠️ Dokumen maksimal ukuran <strong>5MB</strong>.
+            <p class="text-sm text-red-600 px-4 py-2 rounded-lg mt-0">
+                ⚠️ Dokumen lain (Proposal, Surat, Rundown) wajib berformat <strong>PDF</strong>.
+            </p>
+            <p class="text-sm text-red-600 px-4 py-2 rounded-lg mt-0">
+                ⚠️ Ukuran file maksimal adalah <strong>5MB</strong>.
             </p>
 
             <div class="flex justify-between mt-6">

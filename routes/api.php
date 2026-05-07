@@ -34,7 +34,8 @@ Route::middleware('throttle:60,1')->group(function () {
     Route::get('/fasilitas/{slug}', [WisataApiController::class, 'facilities']);
 
     // Jadwal / Booking
-    Route::get('/jadwal', [BookingApiController::class, 'locations']);
+    Route::get('/jadwal', [BookingApiController::class, 'index']);
+    Route::get('/schedules', [BookingApiController::class, 'schedules']);
     Route::get('/booking/{slug}', [BookingApiController::class, 'byLocation']);
     Route::get('/booking/{slug}/{bulan}', [BookingApiController::class, 'byMonth']);
 });
@@ -48,6 +49,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Profile
     Route::get('/profile', [ProfileApiController::class, 'show']);
+    Route::put('/profile', [ProfileApiController::class, 'update']);
     Route::post('/profile/update', [ProfileApiController::class, 'update']);
 
     // Submission

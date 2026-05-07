@@ -11,19 +11,28 @@ use Carbon\Carbon;
 class BookingApiController extends Controller
 {
     /**
-     * Daftar semua lokasi untuk jadwal (sama dengan daftar content)
+     * Daftar semua jadwal (Event + Approved Submissions)
      */
-    public function locations()
+    public function index()
     {
-        $contents = Content::all()->map(function ($content) {
-            $content->image_url = $content->image ? url($content->image) : null;
-            return $content;
+        $events = Event::all()->map(function ($item) {
+            $item->type = 'event';
+            $item->file_url = $item->file ? url('storage/' . $item->file) : null;
+            return $item;
         });
+
+        $submissions = Submission::where('status', 'approved')->get()->map(function ($item) {
+            $item->type = 'submission';
+            $item->file_url = $item->actv_letter ? url('storage/' . $item->actv_letter) : null;
+            return $item;
+        });
+
+        $combined = $events->concat($submissions)->sortBy('start_date')->values();
 
         return response()->json([
             'success' => true,
-            'message' => 'Data lokasi jadwal berhasil diambil.',
-            'data' => $contents,
+            'message' => 'Data jadwal berhasil diambil.',
+            'data' => $combined,
         ]);
     }
 
@@ -124,7 +133,7 @@ class BookingApiController extends Controller
             ->orderBy('start_date')
             ->get()
             ->map(function ($event) {
-                $event->pdf_url = $event->file ? url('storage/' . $event->file) : null;
+                $event->file_url = $event->file ? url('storage/' . $event->file) : null;
                 $event->type = 'event';
                 return $event;
             });
@@ -135,7 +144,7 @@ class BookingApiController extends Controller
             ->orderBy('start_date')
             ->get()
             ->map(function ($submission) {
-                $submission->pdf_url = $submission->actv_letter ? url('storage/' . $submission->actv_letter) : null;
+                $submission->file_url = $submission->actv_letter ? url('storage/' . $submission->actv_letter) : null;
                 $submission->type = 'submission';
                 return $submission;
             });
@@ -150,6 +159,39 @@ class BookingApiController extends Controller
                 'bulan' => $bulan,
                 'events' => $merged,
             ],
+        ]);
+    }
+    /**
+     * Jadwal approved untuk Flutter (General)
+     */
+    public function schedules()
+    {
+        $submissions = Submission::whereIn('status', [
+                'approved',
+                'disetujui',
+                'Disetujui',
+                'approve'
+            ])
+            ->orderBy('start_date', 'asc')
+            ->get();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Jadwal booking berhasil diambil',
+            'data' => $submissions->map(function ($item) {
+                return [
+                    'id' => $item->id,
+                    'user_id' => $item->user_id,
+                    'name_event' => $item->name_event,
+                    'vendor' => $item->vendor,
+                    'location' => $item->location,
+                    'start_date' => $item->start_date,
+                    'end_date' => $item->end_date,
+                    'status' => $item->status,
+                    'file' => $item->file,
+                    'file_url' => $item->file ? url('storage/' . $item->file) : null,
+                ];
+            })->values(),
         ]);
     }
 }
