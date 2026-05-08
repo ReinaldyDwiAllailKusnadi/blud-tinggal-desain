@@ -134,95 +134,111 @@ class AuthController extends Controller
      */
     public function googleLogin(Request $request)
     {
-        $request->validate([
-            'id_token' => 'required|string',
-        ]);
+        try {
+            Log::info('Google API login hit', [
+                'has_id_token' => $request->filled('id_token'),
+                'client_id_exists' => (bool) config('services.google.client_id'),
+            ]);
 
-        $clientId = config('services.google.client_id');
+            $request->validate([
+                'id_token' => 'required|string',
+            ]);
 
-        if (!$clientId) {
+            $clientId = config('services.google.client_id');
+
+            if (!$clientId) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'GOOGLE_CLIENT_ID belum dikonfigurasi.',
+                ], 500);
+            }
+
+            $client = new GoogleClient([
+                'client_id' => $clientId,
+            ]);
+
+            $payload = $client->verifyIdToken($request->id_token);
+
+            if (!$payload) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Token Google tidak valid.',
+                ], 401);
+            }
+
+            $email = $payload['email'] ?? null;
+            $name = $payload['name'] ?? null;
+            $picture = $payload['picture'] ?? null;
+
+            if (!$email) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Email Google tidak ditemukan.',
+                ], 422);
+            }
+
+            $user = User::where('email', $email)->first();
+
+            if (!$user) {
+                $baseUsername = strtolower(strtok($email, '@'));
+                $baseUsername = preg_replace('/[^a-z0-9._]/', '', $baseUsername);
+                $baseUsername = $baseUsername ?: 'user';
+
+                $username = $baseUsername;
+                $counter = 1;
+
+                while (User::where('username', $username)->exists()) {
+                    $username = $baseUsername . $counter;
+                    $counter++;
+                }
+
+                $user = User::create([
+                    'name' => $name ?: $email,
+                    'username' => $username,
+                    'email' => $email,
+                    'phone' => null,
+                    'password' => Hash::make(Str::random(32)),
+                ]);
+            } else {
+                // Jangan overwrite data user secara agresif.
+                // Cukup isi name jika masih kosong.
+                if (!$user->name && $name) {
+                    $user->update([
+                        'name' => $name,
+                    ]);
+                }
+            }
+
+            $token = $user->createToken('mobile-token')->plainTextToken;
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Login Google berhasil.',
+                'data' => [
+                    'token' => $token,
+                    'user' => [
+                        'id' => $user->id,
+                        'name' => $user->name,
+                        'username' => $user->username,
+                        'email' => $user->email,
+                        'phone' => $user->phone,
+                        'photo' => $picture,
+                    ],
+                ],
+            ]);
+        } catch (\Throwable $e) {
+            Log::error('Google API login failed', [
+                'message' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+            ]);
+
             return response()->json([
                 'success' => false,
-                'message' => 'Konfigurasi Google Client ID belum tersedia.',
+                'message' => 'Login Google gagal di server.',
+                'error' => config('app.debug') ? $e->getMessage() : null,
             ], 500);
         }
-
-        $client = new GoogleClient([
-            'client_id' => $clientId,
-        ]);
-
-        $payload = $client->verifyIdToken($request->id_token);
-
-        if (!$payload) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Token Google tidak valid.',
-            ], 401);
-        }
-
-        $email = $payload['email'] ?? null;
-        $name = $payload['name'] ?? null;
-        $picture = $payload['picture'] ?? null;
-
-        if (!$email) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Email Google tidak ditemukan.',
-            ], 422);
-        }
-
-        $user = User::where('email', $email)->first();
-
-        if (!$user) {
-            $baseUsername = strtolower(strtok($email, '@'));
-            $baseUsername = preg_replace('/[^a-z0-9._]/', '', $baseUsername);
-
-            if (!$baseUsername) {
-                $baseUsername = 'user';
-            }
-
-            $username = $baseUsername;
-            $counter = 1;
-
-            while (User::where('username', $username)->exists()) {
-                $username = $baseUsername . $counter;
-                $counter++;
-            }
-
-            $user = User::create([
-                'name' => $name ?: $email,
-                'username' => $username,
-                'email' => $email,
-                'phone' => null,
-                'password' => Hash::make(Str::random(32)),
-            ]);
-        } else {
-            // Jangan overwrite data user secara agresif.
-            // Cukup isi name jika masih kosong.
-            if (!$user->name && $name) {
-                $user->update([
-                    'name' => $name,
-                ]);
-            }
-        }
-
-        $token = $user->createToken('mobile-token')->plainTextToken;
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Login Google berhasil.',
-            'data' => [
-                'token' => $token,
-                'user' => [
-                    'id' => $user->id,
-                    'name' => $user->name,
-                    'username' => $user->username,
-                    'email' => $user->email,
-                    'phone' => $user->phone,
-                    'photo' => $picture,
-                ],
-            ],
-        ]);
     }
 
     /**
