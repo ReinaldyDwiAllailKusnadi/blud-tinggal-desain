@@ -7,6 +7,7 @@ use App\Http\Controllers\Api\WisataApiController;
 use App\Http\Controllers\Api\BookingApiController;
 use App\Http\Controllers\Api\ProfileApiController;
 use App\Http\Controllers\Api\SubmissionApiController;
+use App\Http\Controllers\Api\RecommendationController;
 
 /*
 |--------------------------------------------------------------------------
@@ -56,4 +57,5 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/submission/locations', [SubmissionApiController::class, 'locations']);
     Route::post('/submission', [SubmissionApiController::class, 'store']);
     Route::get('/history', [SubmissionApiController::class, 'history']);
+    Route::post('/recommendation', [RecommendationController::class, 'recommend']);
 });

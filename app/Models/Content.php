@@ -25,6 +25,10 @@ class Content extends Model
         'instagram',
         'tiktok',
         'whatsapp',
+        'capacity',
+        'venue_type',
+        'is_indoor',
+        'is_outdoor',
     ];
 
     public function event()

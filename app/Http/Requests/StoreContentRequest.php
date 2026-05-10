@@ -32,7 +32,26 @@ class StoreContentRequest extends FormRequest
             'location_embed'=> 'nullable|string',
             'image'         => 'nullable|image|mimes:jpg,jpeg,png|max:5048',
             'instagram'     => 'nullable|string',
-            'tiktok'        => 'nullable|string',
+            'whatsapp'      => 'nullable|string|max:255',
+            'capacity'      => ['nullable', 'integer', 'min:0'],
+            'venue_type'    => ['nullable', 'string', 'max:255'],
+            'is_indoor'     => ['nullable', 'boolean'],
+            'is_outdoor'    => ['nullable', 'boolean'],
         ];
+    }
+
+    protected function prepareForValidation(): void
+    {
+        $this->merge([
+            'price_weekday' => $this->cleanRupiah($this->price_weekday),
+            'price_weekend' => $this->cleanRupiah($this->price_weekend),
+            'is_indoor' => $this->boolean('is_indoor'),
+            'is_outdoor' => $this->boolean('is_outdoor'),
+        ]);
+    }
+
+    private function cleanRupiah($value)
+    {
+        return $value !== null ? preg_replace('/[^0-9]/', '', $value) : null;
     }
 }

@@ -94,6 +94,11 @@
           <li><a href="{{ route('submission.rejected.list') }}" class="block px-4 py-1 rounded hover:bg-blue-100 dark:hover:bg-slate-700 text-gray-800 dark:text-slate-200">Rejected</a></li>
         </ul>
       </li>
+
+      <!-- SPK -->
+      <li class="mt-2">
+        <a href="{{ route('admin.recommendation.simulation') }}" class="block px-4 py-2 rounded hover:bg-blue-100 dark:hover:bg-gray-700">🔍 Simulasi Rekomendasi</a>
+      </li>
     </ul>
   </nav>
     <div class="px-4 py-3 border-t dark:border-slate-700 mt-auto">

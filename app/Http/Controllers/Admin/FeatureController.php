@@ -16,8 +16,18 @@ class FeatureController extends Controller
         return view('admin.content.facilities', compact('content'));
     }
 
-   public function store(Request $request)
+    public function store(Request $request)
     {
+        $features = $request->input('features', []);
+        if (is_array($features)) {
+            foreach ($features as $key => $feature) {
+                if (isset($feature['price'])) {
+                    $features[$key]['price'] = preg_replace('/[^0-9]/', '', $feature['price']);
+                }
+            }
+            $request->merge(['features' => $features]);
+        }
+
         $validated = $request->validate([
             'location' => ['required', 'exists:content,id'],
             'features' => ['required', 'array', 'min:1'],

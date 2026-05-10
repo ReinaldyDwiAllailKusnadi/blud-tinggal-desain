@@ -10,6 +10,7 @@ use App\Http\Controllers\Admin\NewsController;
 use App\Http\Controllers\Admin\ContentController;
 use App\Http\Controllers\Admin\SubmissionController;
 use App\Http\Controllers\Admin\FeatureController;
+use App\Http\Controllers\Admin\RecommendationSimulationController;
 use App\Http\Controllers\User\HomeController;
 use App\Http\Controllers\User\LoginController;
 use App\Http\Controllers\Auth\GoogleController;
@@ -71,6 +72,10 @@ Route::prefix('admin')->middleware('auth:admin')->group(function () {
     // PUT untuk menyetujui/menolak 
     Route::put('submission/{id}/approve', [SubmissionController::class, 'approve'])->name('submission.approved');
     Route::put('submission/{id}/reject', [SubmissionController::class, 'reject'])->name('submission.rejected');
+
+    // SPK Recommendation Simulation
+    Route::get('/recommendation/simulation', [RecommendationSimulationController::class, 'index'])->name('admin.recommendation.simulation');
+    Route::post('/recommendation/simulation', [RecommendationSimulationController::class, 'simulate'])->name('admin.recommendation.simulate');
 });
 
 Route::get('/sitemap.xml', [SiteMapController::class, 'index']);

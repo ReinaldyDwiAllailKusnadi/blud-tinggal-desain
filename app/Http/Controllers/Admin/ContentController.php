@@ -42,8 +42,15 @@ class ContentController extends Controller
     {
         try {
             $data = $request->validated();
+            
+            // Debug logging
+            \Log::info('Content store validated data', $data);
+
+            $data['is_indoor'] = $request->boolean('is_indoor');
+            $data['is_outdoor'] = $request->boolean('is_outdoor');
 
             $data['slug'] = Str::slug($data['name'], '-');
+            $data['whatsapp'] = $request->input('whatsapp');
 
             if ($request->hasFile('image')) {
                 $data['image'] = $request->file('image')->store('assets/content', 'public_html_storage');
@@ -78,6 +85,17 @@ class ContentController extends Controller
     {
         try {
             $data = $request->validated();
+            
+            // Debug logging
+            \Log::info('Content update request whatsapp', [
+                'request_whatsapp' => $request->input('whatsapp'),
+                'validated' => $request->validated(),
+            ]);
+            \Log::info('Content update validated data', $data);
+
+            $data['is_indoor'] = $request->boolean('is_indoor');
+            $data['is_outdoor'] = $request->boolean('is_outdoor');
+
             $oldImage = $content->image;
 
             if (!empty($data['name'])) {
@@ -90,7 +108,12 @@ class ContentController extends Controller
                 $data['image'] = $imagePath;
             }
 
+            $data['whatsapp'] = $request->input('whatsapp');
+
             $content->update($data);
+
+            // Update Fasilitas & Harga Area
+            $this->syncContentFeatures($content, $request);
 
             // Bersihkan gambar lama jika ada upload baru dan bukan gambar seed
             if ($request->hasFile('image') && $oldImage) {
@@ -132,5 +155,73 @@ class ContentController extends Controller
         \Illuminate\Support\Facades\Cache::forget('wisata_all');
 
         return redirect()->route('content.index')->with('success', 'Data berhasil dihapus.');
+    }
+
+    private function syncContentFeatures(Content $content, Request $request)
+    {
+        $location = $content->id;
+
+        // ================= Harga Area =================
+        $features = $request->input('features', []);
+        $submittedBagian = [];
+
+        $existingPrices = ContentFeature::where('location', $location)
+            ->where('type', 'price')
+            ->get()
+            ->keyBy('bagian');
+
+        foreach ($features as $feature) {
+            $bagian = $feature['bagian'] ?? null;
+            if (!$bagian) continue;
+
+            $submittedBagian[] = $bagian;
+
+            $data = [
+                'bagian' => $bagian,
+                'luas'   => $feature['luas'] ?? null,
+                'price'  => $feature['price'] ?? null,
+            ];
+
+            if (isset($existingPrices[$bagian])) {
+                $existingPrices[$bagian]->update($data);
+            } else {
+                ContentFeature::create(array_merge($data, [
+                    'location' => $location,
+                    'type'     => 'price',
+                ]));
+            }
+        }
+
+        ContentFeature::where('location', $location)
+            ->where('type', 'price')
+            ->whereNotIn('bagian', $submittedBagian)
+            ->delete();
+
+        // ================= Fasilitas =================
+        $facilityNames = $request->input('facility_names', []);
+        $submittedNames = [];
+
+        $existingFacilities = ContentFeature::where('location', $location)
+            ->where('type', 'facility')
+            ->pluck('id', 'facility_name');
+
+        foreach ($facilityNames as $name) {
+            if (!$name) continue;
+
+            $submittedNames[] = $name;
+
+            if (!isset($existingFacilities[$name])) {
+                ContentFeature::create([
+                    'location'      => $location,
+                    'type'          => 'facility',
+                    'facility_name' => $name,
+                ]);
+            }
+        }
+
+        ContentFeature::where('location', $location)
+            ->where('type', 'facility')
+            ->whereNotIn('facility_name', $submittedNames)
+            ->delete();
     }
 }

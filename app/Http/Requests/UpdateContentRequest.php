@@ -34,7 +34,42 @@ class UpdateContentRequest extends FormRequest
             'location_embed'=> 'nullable|string',
             'image'         => 'nullable|image|mimes:jpg,jpeg,png|max:5048',
             'instagram'     => 'nullable|string',
-            'whatsapp'      => 'nullable|string',
+            'whatsapp'      => 'nullable|string|max:255',
+            'capacity'      => ['nullable', 'integer', 'min:0'],
+            'venue_type'    => ['nullable', 'string', 'max:255'],
+            'is_indoor'     => ['nullable', 'boolean'],
+            'is_outdoor'    => ['nullable', 'boolean'],
+            'facility_names'     => ['nullable', 'array'],
+            'facility_names.*'   => ['required_with:facility_names', 'string', 'max:255'],
+            'features'           => ['nullable', 'array'],
+            'features.*.bagian'  => ['nullable', 'string'],
+            'features.*.luas'    => ['nullable', 'string'],
+            'features.*.price'   => ['nullable', 'integer'],
         ];
+    }
+
+    protected function prepareForValidation(): void
+    {
+        $features = $this->features;
+        if (is_array($features)) {
+            foreach ($features as $key => $feature) {
+                if (isset($feature['price'])) {
+                    $features[$key]['price'] = $this->cleanRupiah($feature['price']);
+                }
+            }
+        }
+
+        $this->merge([
+            'price_weekday' => $this->cleanRupiah($this->price_weekday),
+            'price_weekend' => $this->cleanRupiah($this->price_weekend),
+            'features' => $features,
+            'is_indoor' => $this->boolean('is_indoor'),
+            'is_outdoor' => $this->boolean('is_outdoor'),
+        ]);
+    }
+
+    private function cleanRupiah($value)
+    {
+        return $value !== null ? preg_replace('/[^0-9]/', '', $value) : null;
     }
 }

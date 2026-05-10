@@ -29,6 +29,7 @@
                         <th class="p-3"><x-sort-header column="name" label="Nama Tempat" :sortBy="$sortBy" :sortDir="$sortDir" /></th>
                         <th class="p-3"><x-sort-header column="price_weekday" label="Harga Tiket" :sortBy="$sortBy" :sortDir="$sortDir" /></th>
                         <th class="p-3">Jam Operasional</th>
+                        <th class="p-3">Kapasitas & Tipe</th>
                         <th class="p-3"><x-sort-header column="location" label="Lokasi" :sortBy="$sortBy" :sortDir="$sortDir" /></th>
                         <th class="p-3">Foto</th>
                         <th class="p-3">Deskripsi</th>
@@ -40,10 +41,24 @@
                         <tr class="border-b dark:border-slate-700 text-gray-800 dark:text-slate-300">
                             <td class="p-3 text-center align-middle">{{ $contents->firstItem() + $loop->index }}</td>
                             <td class="p-3 text-center align-middle">{{ $content->name }}</td>
-                            <td class="p-3 text-center align-middle">Rp{{ $content->price_weekday }}</td>
                             <td class="p-3 text-center align-middle">
+                                Rp{{ $content->price_weekday ? number_format((int) $content->price_weekday, 0, ',', '.') : '-' }}
+                            </td>
+                             <td class="p-3 text-center align-middle">
                                 {{ \Carbon\Carbon::parse($content->open_time)->format('h:i') }} -
                                 {{ \Carbon\Carbon::parse($content->close_time)->format('h:i') }}
+                            </td>
+                            <td class="p-3 text-center align-middle">
+                                <span class="block font-semibold">{{ $content->capacity ?? '-' }} Peserta</span>
+                                <span class="text-xs text-gray-500 uppercase">{{ $content->venue_type ?? 'Umum' }}</span>
+                                <div class="mt-1 flex justify-center gap-1">
+                                    @if($content->is_indoor)
+                                        <span class="px-1 bg-blue-100 text-blue-700 text-[10px] rounded">Indoor</span>
+                                    @endif
+                                    @if($content->is_outdoor)
+                                        <span class="px-1 bg-green-100 text-green-700 text-[10px] rounded">Outdoor</span>
+                                    @endif
+                                </div>
                             </td>
                             <td class="p-3 text-center align-middle">{{ $content->location }}</td>
                             <td class="p-3 text-center align-middle">
@@ -74,10 +89,18 @@
                                         <h2 class="text-xl font-semibold text-center mb-2 text-gray-800 dark:text-slate-50">{{ $content->name }}</h2>
 
                                         <p class="text-gray-600 dark:text-slate-300 text-sm text-center mb-4">
-                                            <strong>Harga Tiket Weekday : </strong>Rp{{$content->price_weekday}}<br>
-                                            <strong>Harga Tiket Weekend : </strong>Rp{{$content->price_weekend}}<br>
+                                            <strong>Harga Tiket Weekday : </strong>Rp{{ $content->price_weekday ? number_format((int) $content->price_weekday, 0, ',', '.') : '-' }}<br>
+                                            <strong>Harga Tiket Weekend : </strong>Rp{{ $content->price_weekend ? number_format((int) $content->price_weekend, 0, ',', '.') : '-' }}<br>
                                             <strong>Jam Operasional : </strong> {{ \Carbon\Carbon::parse($content->open_time)->format('h:i') }} - {{\Carbon\Carbon::parse($content->close_time)->format('h:i') }}<br>
-                                            <strong>Lokasi : </strong> {{ $content->location }}
+                                            <strong>Lokasi : </strong> {{ $content->location }}<br>
+                                            <div class="mt-2 pt-2 border-t dark:border-slate-700">
+                                                <strong>Kapasitas Maksimal : </strong> {{ $content->capacity ?? '-' }} Peserta<br>
+                                                <strong>Tipe Lokasi : </strong> {{ $content->venue_type ?? '-' }}<br>
+                                                <strong>Karakteristik : </strong> 
+                                                @if($content->is_indoor) <span class="text-blue-500">Indoor</span> @endif
+                                                @if($content->is_indoor && $content->is_outdoor) & @endif
+                                                @if($content->is_outdoor) <span class="text-green-500">Outdoor</span> @endif
+                                            </div>
                                         </p>
 
                                         <div class="text-gray-800 dark:text-slate-300 text-justify leading-relaxed border-t dark:border-slate-700 pt-4">
