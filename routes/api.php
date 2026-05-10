@@ -57,5 +57,6 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/submission/locations', [SubmissionApiController::class, 'locations']);
     Route::post('/submission', [SubmissionApiController::class, 'store']);
     Route::get('/history', [SubmissionApiController::class, 'history']);
+    Route::get('/submission/{id}/download/{type}', [SubmissionApiController::class, 'download']);
     Route::post('/recommendation', [RecommendationController::class, 'recommend']);
 });

@@ -64,7 +64,7 @@
             <td class="p-3">{{ $sub->vendor }}</td>
             <td class="p-3">
               @if($sub->file)
-                <a href="{{ asset('storage/' . $sub->file) }}" target="_blank" class="text-blue-600 underline">
+                <a href="{{ route('admin.submission.download', [$sub->id, 'proposal']) }}" class="text-blue-600 underline" title="Download File Proposal">
                   📄 File Proposal
                 </a><br>
               @else
@@ -72,7 +72,7 @@
               @endif
     
               @if($sub->ktp)
-                <a href="{{ asset('storage/' . $sub->ktp) }}" target="_blank" class="text-blue-600 underline">
+                <a href="{{ route('admin.submission.download', [$sub->id, 'ktp']) }}" class="text-blue-600 underline" title="Download Scan KTP">
                   🆔 Scan KTP
                 </a><br>
               @else
@@ -80,7 +80,7 @@
               @endif
               
               @if($sub->appl_letter)
-                <a href="{{ asset('storage/' . $sub->appl_letter) }}" target="_blank" class="text-blue-600 underline">
+                <a href="{{ route('admin.submission.download', [$sub->id, 'appl_letter']) }}" class="text-blue-600 underline" title="Download File Pengajuan">
                   📄 File Pengajuan
                 </a><br>
               @else
@@ -88,7 +88,7 @@
               @endif
 
               @if($sub->actv_letter)
-                <a href="{{ asset('storage/' . $sub->actv_letter) }}" target="_blank" class="text-blue-600 underline">
+                <a href="{{ route('admin.submission.download', [$sub->id, 'actv_letter']) }}" class="text-blue-600 underline" title="Download Proposal Kegiatan">
                   📑 Proposal Kegiatan
                 </a><br>
               @else
@@ -177,16 +177,16 @@
                             <td class="font-semibold py-3">Lampiran</td>
                             <td class="py-3 space-y-2">
                               @if($sub->file)
-                                📄 <a href="{{ asset('storage/' . $sub->file) }}" target="_blank" class="text-blue-600 hover:underline">File Proposal</a><br>
+                                📄 <a href="{{ route('admin.submission.download', [$sub->id, 'proposal']) }}" class="text-blue-600 hover:underline" title="Download File Proposal">File Proposal</a><br>
                               @endif
                               @if($sub->ktp)
-                                🆔 <a href="{{ asset('storage/' . $sub->ktp) }}" target="_blank" class="text-blue-600 hover:underline">Scan KTP</a><br>
+                                🆔 <a href="{{ route('admin.submission.download', [$sub->id, 'ktp']) }}" class="text-blue-600 hover:underline" title="Download Scan KTP">Scan KTP</a><br>
                               @endif                    
                               @if($sub->appl_letter)
-                                📄 <a href="{{ asset('storage/' . $sub->appl_letter) }}" target="_blank" class="text-blue-600 hover:underline">File Pengajuan</a><br>
+                                📄 <a href="{{ route('admin.submission.download', [$sub->id, 'appl_letter']) }}" class="text-blue-600 hover:underline" title="Download File Pengajuan">File Pengajuan</a><br>
                               @endif
                               @if($sub->actv_letter)
-                                📑 <a href="{{ asset('storage/' . $sub->actv_letter) }}" target="_blank" class="text-blue-600 hover:underline">Proposal Kegiatan</a><br>
+                                📑 <a href="{{ route('admin.submission.download', [$sub->id, 'actv_letter']) }}" class="text-blue-600 hover:underline" title="Download Proposal Kegiatan">Proposal Kegiatan</a><br>
                               @endif
                             </td>
                           </tr>

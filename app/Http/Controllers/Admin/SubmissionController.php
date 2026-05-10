@@ -266,4 +266,35 @@ class SubmissionController extends Controller
 
 
 
+    public function download($id, $type)
+    {
+        $submission = Submission::findOrFail($id);
+        
+        $mapping = [
+            'proposal'    => 'file',
+            'ktp'         => 'ktp',
+            'appl_letter' => 'appl_letter',
+            'actv_letter' => 'actv_letter',
+        ];
+
+        if (!isset($mapping[$type])) {
+            abort(404, 'Tipe file tidak valid.');
+        }
+
+        $field = $mapping[$type];
+        $path = $submission->$field;
+
+        if (!$path || !\Storage::disk('public_html_storage')->exists($path)) {
+            abort(404, 'File tidak ditemukan.');
+        }
+
+        // Penamaan file yang lebih rapi
+        $extension = pathinfo($path, PATHINFO_EXTENSION);
+        $filename = "{$type}-{$submission->id}.{$extension}";
+
+        if ($type === 'appl_letter') $filename = "surat-pengajuan-{$submission->id}.{$extension}";
+        if ($type === 'actv_letter') $filename = "surat-kegiatan-{$submission->id}.{$extension}";
+
+        return \Storage::disk('public_html_storage')->download($path, $filename);
+    }
 }

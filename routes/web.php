@@ -76,6 +76,7 @@ Route::prefix('admin')->middleware('auth:admin')->group(function () {
     // SPK Recommendation Simulation
     Route::get('/recommendation/simulation', [RecommendationSimulationController::class, 'index'])->name('admin.recommendation.simulation');
     Route::post('/recommendation/simulation', [RecommendationSimulationController::class, 'simulate'])->name('admin.recommendation.simulate');
+    Route::get('/submission/download/{id}/{type}', [SubmissionController::class, 'download'])->name('admin.submission.download');
 });
 
 Route::get('/sitemap.xml', [SiteMapController::class, 'index']);

@@ -132,4 +132,61 @@ class SubmissionApiController extends Controller
             'data' => $contents,
         ]);
     }
+
+    /**
+     * Download lampiran pengajuan (Mobile API)
+     */
+    public function download(Request $request, $id, $type)
+    {
+        try {
+            $submission = Submission::where('id', $id)
+                ->where('user_id', $request->user()->id)
+                ->first();
+
+            if (!$submission) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Anda tidak memiliki akses ke lampiran ini.'
+                ], 403);
+            }
+
+            $mapping = [
+                'proposal'    => 'file',
+                'ktp'         => 'ktp',
+                'appl_letter' => 'appl_letter',
+                'actv_letter' => 'actv_letter',
+            ];
+
+            if (!isset($mapping[$type])) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Tipe file tidak valid.'
+                ], 400);
+            }
+
+            $field = $mapping[$type];
+            $path = $submission->$field;
+
+            if (!$path || !\Storage::disk('public_html_storage')->exists($path)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Lampiran tidak ditemukan.'
+                ], 404);
+            }
+
+            $extension = pathinfo($path, PATHINFO_EXTENSION);
+            $filename = "{$type}-{$submission->id}.{$extension}";
+
+            if ($type === 'appl_letter') $filename = "surat-pengajuan-{$submission->id}.{$extension}";
+            if ($type === 'actv_letter') $filename = "surat-kegiatan-{$submission->id}.{$extension}";
+
+            return \Storage::disk('public_html_storage')->download($path, $filename);
+        } catch (\Exception $e) {
+            Log::error('Download API Error: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Lampiran gagal diunduh.'
+            ], 500);
+        }
+    }
 }
