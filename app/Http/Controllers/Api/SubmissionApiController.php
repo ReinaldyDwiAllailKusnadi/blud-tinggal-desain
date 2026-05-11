@@ -19,29 +19,34 @@ class SubmissionApiController extends Controller
         try {
             $rules = [
                 'namePIC' => 'required|string|max:100',
-                'no_hp' => 'required|string|max:12',
+                'no_hp' => ['required', 'string', 'regex:/^[0-9]{10,12}$/'],
                 'address' => 'required|string|max:255',
                 'vendor' => 'required|string|max:100',
                 'location' => 'required|exists:content,name',
                 'start_date' => 'required|date',
                 'end_date' => 'required|date',
                 'name_event' => 'required|string|max:255',
-                'file' => 'nullable|file|mimes:pdf|max:5120',
-                'ktp' => 'required|file|mimes:pdf,jpg,jpeg,png|max:5120',
-                'appl_letter' => 'nullable|file|mimes:pdf|max:5120',
-                'actv_letter' => 'nullable|file|mimes:pdf|max:5120',
+                'file' => 'required|file|mimes:pdf|max:2048',
+                'ktp' => 'required|file|mimes:pdf|max:2048',
+                'appl_letter' => 'required|file|mimes:pdf|max:2048',
+                'actv_letter' => 'required|file|mimes:pdf|max:2048',
             ];
 
             $messages = [
+                'no_hp.required' => 'Nomor HP wajib diisi.',
+                'no_hp.regex' => 'Nomor HP harus berupa angka dengan panjang 10 sampai 12 digit.',
+                'file.required' => 'File proposal wajib diunggah.',
                 'file.mimes' => 'File proposal harus berformat PDF.',
-                'file.max' => 'File proposal maksimal 5MB.',
+                'file.max' => 'File proposal maksimal 2MB.',
                 'ktp.required' => 'File KTP wajib diunggah.',
-                'ktp.mimes' => 'File KTP harus berformat PDF, JPG, JPEG, atau PNG.',
-                'ktp.max' => 'File KTP maksimal 5MB.',
-                'appl_letter.mimes' => 'Surat permohonan harus berformat PDF.',
-                'appl_letter.max' => 'Surat permohonan maksimal 5MB.',
-                'actv_letter.mimes' => 'Surat keterangan kegiatan harus berformat PDF.',
-                'actv_letter.max' => 'Surat keterangan kegiatan maksimal 5MB.',
+                'ktp.mimes' => 'File KTP harus berformat PDF.',
+                'ktp.max' => 'File KTP maksimal 2MB.',
+                'appl_letter.required' => 'Surat pengajuan wajib diunggah.',
+                'appl_letter.mimes' => 'Surat pengajuan harus berformat PDF.',
+                'appl_letter.max' => 'Surat pengajuan maksimal 2MB.',
+                'actv_letter.required' => 'Surat kegiatan wajib diunggah.',
+                'actv_letter.mimes' => 'Surat kegiatan harus berformat PDF.',
+                'actv_letter.max' => 'Surat kegiatan maksimal 2MB.',
                 'location.exists' => 'Lokasi yang dipilih tidak valid.',
             ];
 
@@ -110,11 +115,6 @@ class SubmissionApiController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Riwayat pengajuan berhasil diambil.',
-            'debug' => [
-                'auth_user_id' => $request->user()->id,
-                'auth_user_email' => $request->user()->email,
-                'total_history' => $submissions->count(),
-            ],
             'data' => $submissions,
         ]);
     }

@@ -15,7 +15,6 @@ use App\Http\Controllers\User\HomeController;
 use App\Http\Controllers\User\LoginController;
 use App\Http\Controllers\Auth\GoogleController;
 use App\Http\Controllers\SiteMapController;
-use Illuminate\Support\Facades\Mail;
 
 
 // User routes
@@ -80,16 +79,4 @@ Route::prefix('admin')->middleware('auth:admin')->group(function () {
 });
 
 Route::get('/sitemap.xml', [SiteMapController::class, 'index']);
-
-//mailtrap
-    Route::get('/tes-mailtrap', function () {
-    Mail::raw('Ini adalah email percobaan via Mailtrap.', function ($message) {
-        $message->to('user@contoh.com')
-                ->subject('Tes Email Laravel via Mailtrap');
-    });
-
-    return "✅ Email percobaan sudah dikirim ke Mailtrap!";
-});
-
-
 

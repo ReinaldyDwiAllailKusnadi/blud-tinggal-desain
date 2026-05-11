@@ -26,14 +26,13 @@ class AuthController extends Controller
                 'phone' => [
                     'nullable',
                     'string',
-                    'max:15',
-                    'regex:/^(08|628)[0-9]{7,12}$/',
+                    'regex:/^[0-9]{10,12}$/',
                 ],
                 'email' => 'required|string|email|max:255|unique:users',
                 'password' => 'required|string|confirmed|min:6',
             ], [
                 'name.min' => 'Nama minimal harus 3 huruf.',
-                'phone.regex' => 'Nomor HP harus diawali dengan 08 atau 628.',
+                'phone.regex' => 'Nomor HP harus berupa angka dengan panjang 10 sampai 12 digit.',
                 'username.unique' => 'Username sudah digunakan.',
                 'email.unique' => 'Email sudah digunakan.',
             ]);

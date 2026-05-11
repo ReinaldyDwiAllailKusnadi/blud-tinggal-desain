@@ -8,6 +8,7 @@ use App\Http\Controllers\Api\BookingApiController;
 use App\Http\Controllers\Api\ProfileApiController;
 use App\Http\Controllers\Api\SubmissionApiController;
 use App\Http\Controllers\Api\RecommendationController;
+use App\Http\Controllers\Api\ForgotPasswordController;
 
 /*
 |--------------------------------------------------------------------------
@@ -25,6 +26,9 @@ Route::middleware('throttle:60,1')->group(function () {
     Route::post('/register', [AuthController::class, 'register']);
     Route::post('/login', [AuthController::class, 'login']);
     Route::post('/auth/google', [AuthController::class, 'googleLogin']);
+    Route::post('/forgot-password', [ForgotPasswordController::class, 'sendResetCode'])->middleware('throttle:5,1');
+    Route::post('/verify-reset-code', [ForgotPasswordController::class, 'verifyResetCode'])->middleware('throttle:5,1');
+    Route::post('/reset-password', [ForgotPasswordController::class, 'resetPassword'])->middleware('throttle:5,1');
 
     // Beranda
     Route::get('/home', [HomeApiController::class, 'index']);

@@ -166,12 +166,7 @@ class BookingApiController extends Controller
      */
     public function schedules()
     {
-        $submissions = Submission::whereIn('status', [
-                'approved',
-                'disetujui',
-                'Disetujui',
-                'approve'
-            ])
+        $submissions = Submission::where('status', 'approved')
             ->orderBy('start_date', 'asc')
             ->get();
 

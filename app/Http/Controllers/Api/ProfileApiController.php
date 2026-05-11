@@ -34,7 +34,7 @@ class ProfileApiController extends Controller
                 'name' => 'required|string|max:255',
                 'username' => 'required|string|max:255|unique:users,username,' . $user->id,
                 'email' => 'required|email|max:255|unique:users,email,' . $user->id,
-                'phone' => 'nullable|string|max:20',
+                'phone' => ['nullable', 'string', 'regex:/^[0-9]{10,12}$/'],
                 'password' => 'nullable|min:8',
             ]);
 
