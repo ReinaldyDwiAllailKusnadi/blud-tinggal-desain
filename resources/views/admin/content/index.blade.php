@@ -128,7 +128,12 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="8" class="text-center p-4 text-gray-500">Data belum tersedia.</td>
+                            <td colspan="9" class="p-0">
+                                <x-empty-state 
+                                    message="{{ request('search') ? 'Tidak ada hasil pencarian untuk \"' . request('search') . '\"' : 'Belum ada data tempat wisata.' }}" 
+                                    icon="{{ request('search') ? 'search' : 'folder-open' }}" 
+                                />
+                            </td>
                         </tr>
                     @endforelse
                 </tbody>

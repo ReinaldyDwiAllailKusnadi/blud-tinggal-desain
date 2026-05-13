@@ -13,17 +13,25 @@ class WisataApiController extends Controller
      */
     public function index()
     {
-        $contents = \Illuminate\Support\Facades\Cache::remember('wisata_all', 3600, function () {
-            return Content::all()->map(function ($content) {
-                $content->image_url = $content->image ? url($content->image) : null;
-                return $content;
-            });
+        $contents = Content::paginate(10);
+        
+        $contents->getCollection()->transform(function ($content) {
+            $content->image_url = $content->image ? url($content->image) : null;
+            return $content;
         });
 
         return response()->json([
             'success' => true,
             'message' => 'Data wisata berhasil diambil.',
-            'data' => $contents,
+            'data' => $contents->items(),
+            'pagination' => [
+                'total' => $contents->total(),
+                'per_page' => $contents->perPage(),
+                'current_page' => $contents->currentPage(),
+                'last_page' => $contents->lastPage(),
+                'next_page_url' => $contents->nextPageUrl(),
+                'prev_page_url' => $contents->previousPageUrl(),
+            ]
         ]);
     }
 

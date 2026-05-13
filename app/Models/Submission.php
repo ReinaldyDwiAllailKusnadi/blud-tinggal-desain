@@ -20,6 +20,7 @@ class Submission extends Model
         'address',
         'vendor',
         'location',
+        'content_id',
         'apply_date',
         'start_date',
         'end_date',
@@ -34,7 +35,7 @@ class Submission extends Model
 
     public function content()
     {
-        return $this->belongsTo(Content::class, 'name');
+        return $this->belongsTo(Content::class, 'content_id');
     }
 
         public function user()

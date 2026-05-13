@@ -19,12 +19,12 @@
             </div>
 
             <div class="mb-4 flex items-center">
-                <label for="location" class="w-1/4 font-medium">Lokasi</label>
-                <select name="location" id="location" required
+                <label for="content_id" class="w-1/4 font-medium">Lokasi</label>
+                <select name="content_id" id="content_id" required
                     class="w-3/4 border px-4 py-2 rounded-lg focus:outline-none focus:ring focus:ring-blue-300">
                     <option value="">--PILIH LOKASI--</option>
                     @foreach($contents as $ctn)
-                        <option value="{{ $ctn->name }}" {{ old('location', $event->location) == $ctn->name ? 'selected' : '' }}>
+                        <option value="{{ $ctn->id }}" {{ old('content_id', $event->content_id) == $ctn->id ? 'selected' : '' }}>
                             {{ $ctn->name }}
                         </option>
                     @endforeach

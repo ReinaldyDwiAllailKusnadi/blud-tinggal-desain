@@ -36,6 +36,11 @@
         <label class="block text-sm text-gray-600 mb-1" for="password">Password</label>
         <input type="password" id="password" name="password" required
           class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-400 focus:outline-none">
+        <div class="flex justify-end mt-1">
+          <a href="{{ route('forgot.password.form') }}" class="text-xs text-blue-500 font-semibold hover:underline">
+            Lupa Password?
+          </a>
+        </div>
       </div>
 
       <button type="submit"

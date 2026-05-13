@@ -12,6 +12,7 @@ use App\Models\Event;
 use App\Models\ContentFeature;
 use App\Models\Submission;
 use Carbon\Carbon; 
+use Illuminate\Support\Facades\Storage;
 
 
 class HomeController extends Controller
@@ -262,5 +263,55 @@ class HomeController extends Controller
                 ->withInput()
                 ->with('error', 'Terjadi kesalahan sistem: ' . $e->getMessage());
         }
+    }
+
+    public function download($id, $type)
+    {
+        $submission = Submission::where('id', $id)
+            ->where('user_id', auth()->id())
+            ->firstOrFail();
+
+        $map = [
+            'proposal' => [
+                'field' => 'file',
+                'name' => 'proposal-' . $submission->id . '.pdf',
+            ],
+            'ktp' => [
+                'field' => 'ktp',
+                'name' => 'ktp-' . $submission->id . '.pdf',
+            ],
+            'appl_letter' => [
+                'field' => 'appl_letter',
+                'name' => 'surat-pengajuan-' . $submission->id . '.pdf',
+            ],
+            'actv_letter' => [
+                'field' => 'actv_letter',
+                'name' => 'surat-kegiatan-' . $submission->id . '.pdf',
+            ],
+        ];
+
+        abort_if(!array_key_exists($type, $map), 404);
+
+        $field = $map[$type]['field'];
+        $downloadName = $map[$type]['name'];
+        $path = $submission->{$field};
+
+        if (!$path) {
+            abort(404, 'Lampiran tidak ditemukan.');
+        }
+
+        // Normalisasi path jika data lama menyimpan URL penuh atau prefix storage
+        $path = str_replace(url('/storage') . '/', '', $path);
+        $path = str_replace('/storage/', '', $path);
+        $path = str_replace('storage/', '', $path);
+
+        if (!Storage::disk('public_html_storage')->exists($path)) {
+            abort(404, 'File tidak ditemukan di storage.');
+        }
+
+        return Storage::disk('public_html_storage')->download($path, $downloadName, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'attachment; filename="' . $downloadName . '"',
+        ]);
     }
 }

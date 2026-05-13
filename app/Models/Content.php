@@ -46,5 +46,16 @@ class Content extends Model
         return $this->hasMany(ContentFeature::class, 'location');
     }
 
-    
+    protected static function booted()
+    {
+        static::saved(function () {
+            \Illuminate\Support\Facades\Cache::forget('wisata_all');
+            \Illuminate\Support\Facades\Cache::forget('home_data');
+        });
+
+        static::deleted(function () {
+            \Illuminate\Support\Facades\Cache::forget('wisata_all');
+            \Illuminate\Support\Facades\Cache::forget('home_data');
+        });
+    }
 }

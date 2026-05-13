@@ -51,11 +51,12 @@ Route::middleware('throttle:60,1')->group(function () {
 Route::middleware('auth:sanctum')->group(function () {
     // Auth
     Route::post('/logout', [AuthController::class, 'logout']);
+    Route::post('/fcm-token', [AuthController::class, 'updateFcmToken']);
 
     // Profile
     Route::get('/profile', [ProfileApiController::class, 'show']);
     Route::put('/profile', [ProfileApiController::class, 'update']);
-    Route::post('/profile/update', [ProfileApiController::class, 'update']);
+
 
     // Submission
     Route::get('/submission/locations', [SubmissionApiController::class, 'locations']);

@@ -15,12 +15,13 @@ class Event extends Model
         'end_date',
         'name_event',
         'location',
+        'content_id',
         'file',
     ];
 
     public function content()
     {
-        return $this->belongsTo(Content::class, 'location');
+        return $this->belongsTo(Content::class, 'content_id');
     }
 
 }

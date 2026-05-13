@@ -15,6 +15,7 @@ use App\Http\Controllers\User\HomeController;
 use App\Http\Controllers\User\LoginController;
 use App\Http\Controllers\Auth\GoogleController;
 use App\Http\Controllers\SiteMapController;
+use App\Http\Controllers\Auth\WebForgotPasswordController;
 
 
 // User routes
@@ -34,6 +35,16 @@ Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 Route::get('/register', [LoginController::class, 'register'])->name('register');
 Route::post('/register', [LoginController::class, 'store'])->name('register.post');
 
+// Forgot Password
+Route::middleware('guest')->group(function () {
+    Route::get('/forgot-password', [WebForgotPasswordController::class, 'showForgotForm'])->name('forgot.password.form');
+    Route::post('/forgot-password', [WebForgotPasswordController::class, 'sendResetCode'])->name('forgot.password.send');
+    Route::get('/verify-reset-code', [WebForgotPasswordController::class, 'showVerifyForm'])->name('forgot.password.verify.form');
+    Route::post('/verify-reset-code', [WebForgotPasswordController::class, 'verifyResetCode'])->name('forgot.password.verify');
+    Route::get('/new-password', [WebForgotPasswordController::class, 'showNewPasswordForm'])->name('forgot.password.new.form');
+    Route::post('/new-password', [WebForgotPasswordController::class, 'updatePassword'])->name('forgot.password.update');
+});
+
 Route::get('auth/google', [GoogleController::class, 'redirectToGoogle'])->name('google.login');
 Route::get('auth/google/callback', [GoogleController::class, 'handleGoogleCallback']);
 
@@ -42,6 +53,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/profil', [HomeController::class, 'profile'])->name('profile');
     Route::post('/profil', [HomeController::class, 'updateProfile'])->name('profile.update');
     Route::post('/penyewaan',[HomeController::class, 'storeSubmission'])->name('user.submission.store');
+    Route::get('/history/download/{id}/{type}', [HomeController::class, 'download'])->name('history.download');
 });
 
 

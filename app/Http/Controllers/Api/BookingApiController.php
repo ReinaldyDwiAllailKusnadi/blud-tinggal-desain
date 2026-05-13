@@ -168,12 +168,12 @@ class BookingApiController extends Controller
     {
         $submissions = Submission::where('status', 'approved')
             ->orderBy('start_date', 'asc')
-            ->get();
+            ->paginate(15);
 
         return response()->json([
             'success' => true,
             'message' => 'Jadwal booking berhasil diambil',
-            'data' => $submissions->map(function ($item) {
+            'data' => $submissions->getCollection()->map(function ($item) {
                 return [
                     'id' => $item->id,
                     'user_id' => $item->user_id,
@@ -187,6 +187,14 @@ class BookingApiController extends Controller
                     'file_url' => $item->file ? url('storage/' . $item->file) : null,
                 ];
             })->values(),
+            'pagination' => [
+                'total' => $submissions->total(),
+                'per_page' => $submissions->perPage(),
+                'current_page' => $submissions->currentPage(),
+                'last_page' => $submissions->lastPage(),
+                'next_page_url' => $submissions->nextPageUrl(),
+                'prev_page_url' => $submissions->previousPageUrl(),
+            ]
         ]);
     }
 }

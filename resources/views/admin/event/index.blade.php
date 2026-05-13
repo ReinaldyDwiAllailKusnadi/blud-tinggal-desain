@@ -87,7 +87,12 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="6" class="text-center p-4 text-gray-500">Data belum tersedia.</td>
+                            <td colspan="6" class="p-0">
+                                <x-empty-state 
+                                    message="{{ request('search') ? 'Tidak ada jadwal untuk vendor \"' . request('search') . '\"' : 'Belum ada jadwal event terbaru.' }}" 
+                                    icon="{{ request('search') ? 'search' : 'folder-open' }}" 
+                                />
+                            </td>
                         </tr>
                     @endforelse
                 </tbody>

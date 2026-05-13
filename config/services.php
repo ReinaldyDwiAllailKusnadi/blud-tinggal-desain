@@ -41,4 +41,9 @@ return [
         'redirect' => env('GOOGLE_REDIRECT_URI'),
     ],
 
+    'fcm' => [
+        'project_id' => env('FCM_PROJECT_ID'),
+        'service_account_path' => base_path(env('FCM_SERVICE_ACCOUNT_PATH', 'storage/app/firebase/service-account.json')),
+    ],
+
 ];

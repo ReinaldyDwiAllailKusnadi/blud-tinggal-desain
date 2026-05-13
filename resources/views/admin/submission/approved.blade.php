@@ -17,7 +17,7 @@
       <select name="location" class="border px-4 py-2 rounded-lg text-gray-700 max-w-[200px]">
         <option value="">Semua Lokasi</option>
         @foreach($contents as $content)
-          <option value="{{ $content->name }}" {{ request('location') == $content->name ? 'selected' : '' }}>
+          <option value="{{ $content->id }}" {{ request('location') == $content->id ? 'selected' : '' }}>
             {{ $content->name }}
           </option>
         @endforeach
@@ -207,7 +207,12 @@
           </tr>
         @empty
           <tr>
-            <td colspan="7" class="p-4 text-center text-gray-500">Data pengajuan belum tersedia.</td>
+            <td colspan="8" class="p-0">
+              <x-empty-state 
+                message="{{ (request('search') || request('location') || request('month')) ? 'Tidak ada pengajuan approved yang sesuai filter.' : 'Belum ada pengajuan yang disetujui.' }}" 
+                icon="{{ (request('search') || request('location') || request('month')) ? 'search' : 'folder-open' }}" 
+              />
+            </td>
           </tr>
         @endforelse
       </tbody>

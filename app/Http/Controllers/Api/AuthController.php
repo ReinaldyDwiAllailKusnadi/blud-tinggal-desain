@@ -241,15 +241,30 @@ class AuthController extends Controller
     }
 
     /**
-     * Logout user (revoke current token)
+     * Update FCM Token untuk user yang sedang login
      */
-    public function logout(Request $request)
+    public function updateFcmToken(Request $request)
     {
-        $request->user()->currentAccessToken()->delete();
+        try {
+            $request->validate([
+                'fcm_token' => 'required|string',
+            ]);
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Logout berhasil.',
-        ]);
+            $user = $request->user();
+            $user->update([
+                'fcm_token' => $request->fcm_token,
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'FCM Token berhasil diperbarui.',
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Update FCM Token error: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal memperbarui FCM Token.',
+            ], 500);
+        }
     }
 }

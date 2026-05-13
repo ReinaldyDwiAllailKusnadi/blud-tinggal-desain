@@ -100,7 +100,12 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="6" class="text-center p-4 text-gray-500">Data Berita belum tersedia.</td>
+                            <td colspan="6" class="p-0">
+                                <x-empty-state 
+                                    message="{{ request('search') ? 'Tidak ada berita dengan judul \"' . request('search') . '\"' : 'Belum ada berita yang diunggah.' }}" 
+                                    icon="{{ request('search') ? 'search' : 'folder-open' }}" 
+                                />
+                            </td>
                         </tr>
                     @endforelse
                 </tbody>

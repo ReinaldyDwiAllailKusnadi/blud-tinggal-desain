@@ -10,6 +10,7 @@ use Carbon\Carbon;
 use App\Mail\BookingStatusMail;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 
 class SubmissionController extends Controller
 {
@@ -21,7 +22,7 @@ class SubmissionController extends Controller
             $query->where('vendor', 'like', '%' . $request->search . '%');
         }
         if ($request->filled('location')) {
-            $query->where('location', $request->location);
+            $query->where('content_id', $request->location);
         }
         if ($request->filled('month')) {
             $query->whereMonth('created_at', $request->month);
@@ -63,7 +64,7 @@ class SubmissionController extends Controller
             $query->where('vendor', 'like', '%' . $request->search . '%');
         }
         if ($request->filled('location')) {
-            $query->where('location', $request->location);
+            $query->where('content_id', $request->location);
         }
         if ($request->filled('month')) {
             $query->whereMonth('created_at', $request->month);
@@ -89,7 +90,7 @@ class SubmissionController extends Controller
             $query->where('vendor', 'like', '%' . $request->search . '%');
         }
         if ($request->filled('location')) {
-            $query->where('location', $request->location);
+            $query->where('content_id', $request->location);
         }
         if ($request->filled('month')) {
             $query->whereMonth('created_at', $request->month);
@@ -113,25 +114,10 @@ class SubmissionController extends Controller
         $submission->status = 'approved';
         $submission->save();
 
-        try {
-            // kirim email ke user
-            if ($submission->user && $submission->user->email) {
-                Mail::to($submission->user->email)
-                    ->send(new BookingStatusMail($submission, 'approved'));
-            }
+        // Kirim Notifikasi (Email & Push)
+        $this->sendStatusNotifications($submission, 'approved');
 
-            return redirect()->back()->with('success', 'Pengajuan disetujui dan email notifikasi berhasil dikirim.');
-        } catch (\Throwable $e) {
-            Log::warning('Email notifikasi approval gagal dikirim', [
-                'submission_id' => $submission->id,
-                'user_id' => $submission->user_id,
-                'error' => $e->getMessage(),
-            ]);
-
-            return redirect()->back()
-                ->with('success', 'Pengajuan berhasil disetujui.')
-                ->with('warning', 'Namun email notifikasi gagal dikirim. Silakan cek konfigurasi email.');
-        }
+        return redirect()->back()->with('success', 'Pengajuan disetujui dan notifikasi berhasil dikirim.');
     }
 
     public function reject(Request $request, $id)
@@ -145,24 +131,46 @@ class SubmissionController extends Controller
         $submission->notes = $request->notes;
         $submission->save();
 
+        // Kirim Notifikasi (Email & Push)
+        $this->sendStatusNotifications($submission, 'rejected');
+
+        return redirect()->back()->with('success', 'Pengajuan ditolak dan notifikasi berhasil dikirim.');
+    }
+
+    /**
+     * Helper untuk kirim Email & Push Notification
+     */
+    private function sendStatusNotifications($submission, $status)
+    {
+        $user = $submission->user;
+        if (!$user) return;
+
+        // 1. Kirim Email
         try {
-            // kirim email ke user
-            if ($submission->user && $submission->user->email) {
-                Mail::to($submission->user->email)
-                    ->send(new BookingStatusMail($submission, 'rejected'));
+            if ($user->email) {
+                Mail::to($user->email)->send(new BookingStatusMail($submission, $status));
             }
-
-            return redirect()->back()->with('success', 'Pengajuan ditolak dan email notifikasi berhasil dikirim.');
         } catch (\Throwable $e) {
-            Log::warning('Email notifikasi rejection gagal dikirim', [
-                'submission_id' => $submission->id,
-                'user_id' => $submission->user_id,
-                'error' => $e->getMessage(),
-            ]);
+            Log::warning("Email notification failed for submission #{$submission->id}: " . $e->getMessage());
+        }
 
-            return redirect()->back()
-                ->with('success', 'Pengajuan berhasil ditolak.')
-                ->with('warning', 'Namun email notifikasi gagal dikirim. Silakan cek konfigurasi email.');
+        // 2. Kirim Push Notification (FCM)
+        try {
+            if ($user->fcm_token) {
+                $title = $status === 'approved' ? 'Pengajuan Disetujui! ✅' : 'Pengajuan Ditolak ❌';
+                $body = $status === 'approved' 
+                    ? "Selamat! Pengajuan sewa untuk '{$submission->name_event}' telah disetujui."
+                    : "Mohon maaf, pengajuan sewa untuk '{$submission->name_event}' ditolak. Cek aplikasi untuk detail.";
+
+                app(\App\Services\NotificationService::class)->sendNotification(
+                    $user->fcm_token,
+                    $title,
+                    $body,
+                    ['submission_id' => $submission->id, 'status' => $status]
+                );
+            }
+        } catch (\Throwable $e) {
+            Log::warning("FCM notification failed for submission #{$submission->id}: " . $e->getMessage());
         }
     }
 
@@ -184,7 +192,7 @@ class SubmissionController extends Controller
                 'no_hp'      => 'required|string|max:12',
                 'address'    => 'required|string|max:255',
                 'vendor'     => 'required|string|max:100',
-                'location'   => 'required|exists:content,name',
+                'content_id' => 'required|exists:content,id',
                 'start_date' => 'required|date',
                 'end_date'   => 'required|date',
                 'name_event' => 'required|string|max:255',
@@ -194,7 +202,8 @@ class SubmissionController extends Controller
                 'actv_letter'=> 'nullable|file|mimes:pdf|max:5048',
             ]);
 
-            $content = Content::where('name', $data['location'])->firstOrFail();
+            $content = Content::findOrFail($data['content_id']);
+            $data['location'] = $content->name;
 
             // update status tidak diubah, tetap sesuai yg ada
             $data['notes'] = $request->input('notes', $submission->notes);
@@ -269,32 +278,48 @@ class SubmissionController extends Controller
     public function download($id, $type)
     {
         $submission = Submission::findOrFail($id);
-        
-        $mapping = [
-            'proposal'    => 'file',
-            'ktp'         => 'ktp',
-            'appl_letter' => 'appl_letter',
-            'actv_letter' => 'actv_letter',
+
+        $map = [
+            'proposal' => [
+                'field' => 'file',
+                'name' => 'proposal-' . $submission->id . '.pdf',
+            ],
+            'ktp' => [
+                'field' => 'ktp',
+                'name' => 'ktp-' . $submission->id . '.pdf',
+            ],
+            'appl_letter' => [
+                'field' => 'appl_letter',
+                'name' => 'surat-pengajuan-' . $submission->id . '.pdf',
+            ],
+            'actv_letter' => [
+                'field' => 'actv_letter',
+                'name' => 'surat-kegiatan-' . $submission->id . '.pdf',
+            ],
         ];
 
-        if (!isset($mapping[$type])) {
-            abort(404, 'Tipe file tidak valid.');
+        abort_if(!array_key_exists($type, $map), 404);
+
+        $field = $map[$type]['field'];
+        $downloadName = $map[$type]['name'];
+        $path = $submission->{$field};
+
+        if (!$path) {
+            abort(404, 'Lampiran tidak ditemukan.');
         }
 
-        $field = $mapping[$type];
-        $path = $submission->$field;
+        // Normalisasi path jika ada data lama yang menyimpan "storage/..." atau full URL
+        $path = str_replace(url('/storage') . '/', '', $path);
+        $path = str_replace('/storage/', '', $path);
+        $path = str_replace('storage/', '', $path);
 
-        if (!$path || !\Storage::disk('public_html_storage')->exists($path)) {
-            abort(404, 'File tidak ditemukan.');
+        if (!Storage::disk('public_html_storage')->exists($path)) {
+            abort(404, 'File tidak ditemukan di storage.');
         }
 
-        // Penamaan file yang lebih rapi
-        $extension = pathinfo($path, PATHINFO_EXTENSION);
-        $filename = "{$type}-{$submission->id}.{$extension}";
-
-        if ($type === 'appl_letter') $filename = "surat-pengajuan-{$submission->id}.{$extension}";
-        if ($type === 'actv_letter') $filename = "surat-kegiatan-{$submission->id}.{$extension}";
-
-        return \Storage::disk('public_html_storage')->download($path, $filename);
+        return Storage::disk('public_html_storage')->download($path, $downloadName, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'attachment; filename="' . $downloadName . '"',
+        ]);
     }
 }

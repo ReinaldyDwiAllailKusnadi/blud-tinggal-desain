@@ -8,6 +8,7 @@ use App\Models\Content;
 use App\Models\Submission;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 
 class SubmissionApiController extends Controller
 {
@@ -22,7 +23,7 @@ class SubmissionApiController extends Controller
                 'no_hp' => ['required', 'string', 'regex:/^[0-9]{10,12}$/'],
                 'address' => 'required|string|max:255',
                 'vendor' => 'required|string|max:100',
-                'location' => 'required|exists:content,name',
+                'content_id' => 'required|exists:content,id',
                 'start_date' => 'required|date',
                 'end_date' => 'required|date',
                 'name_event' => 'required|string|max:255',
@@ -33,24 +34,36 @@ class SubmissionApiController extends Controller
             ];
 
             $messages = [
+                'namePIC.required' => 'Nama PIC wajib diisi.',
                 'no_hp.required' => 'Nomor HP wajib diisi.',
                 'no_hp.regex' => 'Nomor HP harus berupa angka dengan panjang 10 sampai 12 digit.',
+                'address.required' => 'Alamat wajib diisi.',
+                'vendor.required' => 'Vendor atau instansi wajib diisi.',
+                'content_id.required' => 'Lokasi wisata wajib dipilih.',
+                'content_id.exists' => 'Lokasi yang dipilih tidak valid.',
+                'start_date.required' => 'Tanggal mulai wajib diisi.',
+                'start_date.date' => 'Format tanggal mulai tidak valid.',
+                'end_date.required' => 'Tanggal selesai wajib diisi.',
+                'end_date.date' => 'Format tanggal selesai tidak valid.',
+                'name_event.required' => 'Nama kegiatan wajib diisi.',
                 'file.required' => 'File proposal wajib diunggah.',
                 'file.mimes' => 'File proposal harus berformat PDF.',
                 'file.max' => 'File proposal maksimal 2MB.',
-                'ktp.required' => 'File KTP wajib diunggah.',
-                'ktp.mimes' => 'File KTP harus berformat PDF.',
-                'ktp.max' => 'File KTP maksimal 2MB.',
+                'ktp.required' => 'Scan KTP wajib diunggah.',
+                'ktp.mimes' => 'Scan KTP harus berformat PDF.',
+                'ktp.max' => 'Scan KTP maksimal 2MB.',
                 'appl_letter.required' => 'Surat pengajuan wajib diunggah.',
                 'appl_letter.mimes' => 'Surat pengajuan harus berformat PDF.',
                 'appl_letter.max' => 'Surat pengajuan maksimal 2MB.',
                 'actv_letter.required' => 'Surat kegiatan wajib diunggah.',
                 'actv_letter.mimes' => 'Surat kegiatan harus berformat PDF.',
                 'actv_letter.max' => 'Surat kegiatan maksimal 2MB.',
-                'location.exists' => 'Lokasi yang dipilih tidak valid.',
             ];
 
             $data = $request->validate($rules, $messages);
+
+            $content = Content::findOrFail($data['content_id']);
+            $data['location'] = $content->name;
 
             $data['user_id'] = $request->user()->id;
             $data['status'] = 'pending';
@@ -102,20 +115,38 @@ class SubmissionApiController extends Controller
         $submissions = Submission::where('user_id', $request->user()->id)
             ->orderBy('apply_date', 'desc')
             ->orderBy('id', 'desc')
-            ->get()
-            ->map(function ($item) {
-                // Konversi path file ke full URL
-                $item->file_url = $item->file ? url('storage/' . $item->file) : null;
-                $item->ktp_url = $item->ktp ? url('storage/' . $item->ktp) : null;
-                $item->appl_letter_url = $item->appl_letter ? url('storage/' . $item->appl_letter) : null;
-                $item->actv_letter_url = $item->actv_letter ? url('storage/' . $item->actv_letter) : null;
-                return $item;
-            });
+            ->paginate(10);
+
+        $submissions->getCollection()->transform(function ($item) {
+            // Konversi path file ke full URL
+            $item->file_url = $item->file ? url('storage/' . $item->file) : null;
+            $item->ktp_url = $item->ktp ? url('storage/' . $item->ktp) : null;
+            $item->appl_letter_url = $item->appl_letter ? url('storage/' . $item->appl_letter) : null;
+            $item->actv_letter_url = $item->actv_letter ? url('storage/' . $item->actv_letter) : null;
+
+            // Tambahkan URL download API untuk Flutter
+            $item->download_urls = [
+                'proposal'    => $item->file ? url("/api/submission/{$item->id}/download/proposal") : null,
+                'ktp'         => $item->ktp ? url("/api/submission/{$item->id}/download/ktp") : null,
+                'appl_letter' => $item->appl_letter ? url("/api/submission/{$item->id}/download/appl_letter") : null,
+                'actv_letter' => $item->actv_letter ? url("/api/submission/{$item->id}/download/actv_letter") : null,
+            ];
+
+            return $item;
+        });
 
         return response()->json([
             'success' => true,
             'message' => 'Riwayat pengajuan berhasil diambil.',
-            'data' => $submissions,
+            'data' => $submissions->items(),
+            'pagination' => [
+                'total' => $submissions->total(),
+                'per_page' => $submissions->perPage(),
+                'current_page' => $submissions->currentPage(),
+                'last_page' => $submissions->lastPage(),
+                'next_page_url' => $submissions->nextPageUrl(),
+                'prev_page_url' => $submissions->previousPageUrl(),
+            ]
         ]);
     }
 
@@ -146,46 +177,68 @@ class SubmissionApiController extends Controller
             if (!$submission) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Anda tidak memiliki akses ke lampiran ini.'
+                    'message' => 'Anda tidak memiliki akses ke lampiran ini atau data tidak ditemukan.'
                 ], 403);
             }
 
-            $mapping = [
-                'proposal'    => 'file',
-                'ktp'         => 'ktp',
-                'appl_letter' => 'appl_letter',
-                'actv_letter' => 'actv_letter',
+            $map = [
+                'proposal' => [
+                    'field' => 'file',
+                    'name' => 'proposal-' . $submission->id . '.pdf',
+                ],
+                'ktp' => [
+                    'field' => 'ktp',
+                    'name' => 'ktp-' . $submission->id . '.pdf',
+                ],
+                'appl_letter' => [
+                    'field' => 'appl_letter',
+                    'name' => 'surat-pengajuan-' . $submission->id . '.pdf',
+                ],
+                'actv_letter' => [
+                    'field' => 'actv_letter',
+                    'name' => 'surat-kegiatan-' . $submission->id . '.pdf',
+                ],
             ];
 
-            if (!isset($mapping[$type])) {
+            if (!array_key_exists($type, $map)) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Tipe file tidak valid.'
+                    'message' => 'Tipe lampiran tidak valid.'
                 ], 400);
             }
 
-            $field = $mapping[$type];
-            $path = $submission->$field;
+            $field = $map[$type]['field'];
+            $downloadName = $map[$type]['name'];
+            $path = $submission->{$field};
 
-            if (!$path || !\Storage::disk('public_html_storage')->exists($path)) {
+            if (!$path) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Lampiran tidak ditemukan.'
                 ], 404);
             }
 
-            $extension = pathinfo($path, PATHINFO_EXTENSION);
-            $filename = "{$type}-{$submission->id}.{$extension}";
+            // Normalisasi path jika data lama menyimpan prefix storage atau URL penuh
+            $path = str_replace(url('/storage') . '/', '', $path);
+            $path = str_replace('/storage/', '', $path);
+            $path = str_replace('storage/', '', $path);
 
-            if ($type === 'appl_letter') $filename = "surat-pengajuan-{$submission->id}.{$extension}";
-            if ($type === 'actv_letter') $filename = "surat-kegiatan-{$submission->id}.{$extension}";
+            if (!Storage::disk('public_html_storage')->exists($path)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'File tidak ditemukan di storage.'
+                ], 404);
+            }
 
-            return \Storage::disk('public_html_storage')->download($path, $filename);
+            return Storage::disk('public_html_storage')->download($path, $downloadName, [
+                'Content-Type' => 'application/pdf',
+                'Content-Disposition' => 'attachment; filename="' . $downloadName . '"',
+            ]);
         } catch (\Exception $e) {
             Log::error('Download API Error: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
-                'message' => 'Lampiran gagal diunduh.'
+                'message' => 'Terjadi kesalahan saat mengunduh lampiran.'
             ], 500);
         }
     }

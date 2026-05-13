@@ -68,64 +68,8 @@ class EventController extends Controller
     public function store(Request $request)
     {
         try {
-        $data = $request->validate([
-            'location'  => 'required|exists:content,name',
-            'vendor' => 'required|string|max:255',
-            'start_date' => 'required|date',
-            'end_date' => 'required|date|after_or_equal:start_date',
-            'name_event' => 'required|string|max:255',
-            'file' => 'nullable|file|mimes:pdf|max:2048',
-        ]);
-
-        $content = Content::where('name', $data['location'])->firstOrFail();
-
-        // Cek bentrok event
-        $conflict = Event::where(function ($query) use ($data) {
-            $query->where('start_date', '<=', $data['end_date'])
-                ->where('end_date', '>=', $data['start_date']);
-        })->first();
-
-        if ($conflict) {
-        return redirect()->back()
-            ->with('error', 'Tanggal yang dipilih bentrok dengan event lain: ' .
-                $conflict->name_event . ' oleh ' . $conflict->vendor .
-                ' (' . $conflict->start_date . ' s/d ' . $conflict->end_date . ')')
-            ->withInput($request->except(['start_date', 'end_date']));
-        }
-
-        if ($request->hasFile('file')) {
-            $file = $request->file('file');
-            $rundownPath = $file->store('assets/rundowns', 'public_html_storage'); // simpan ke storage/app/public/rundowns
-            $data['file'] = $rundownPath;
-        }
-
-        Event::create($data);
-
-        Activity::create([
-            'admin_id' => auth('admin')->id(),
-            'description' => 'menambahkan jadwal event baru.',
-        ]);
-        
-        return redirect()->route('event.index')->with('success', 'Data berhasil ditambahkan.');
-        } catch (\Exception $e) {
-        return back()
-            ->withInput()
-            ->with('error', 'Terjadi kesalahan saat menambahkan event: ' . $e->getMessage());
-        }
-    }
-
-    public function edit($id)
-    {
-        $event = Event::findOrFail($id);
-        $contents = Content::All();
-        return view('admin.event.edit', compact('event','contents'));
-    }
-
-    public function update(Request $request, Event $event)
-    {
-        try {
             $data = $request->validate([
-                'location'   => 'required|exists:content,name',
+                'content_id'  => 'required|exists:content,id',
                 'vendor'     => 'required|string|max:255',
                 'start_date' => 'required|date',
                 'end_date'   => 'required|date|after_or_equal:start_date',
@@ -133,11 +77,70 @@ class EventController extends Controller
                 'file'       => 'nullable|file|mimes:pdf|max:2048',
             ]);
 
-            // Pastikan lokasi valid (selaras dengan store)
-            $content = Content::where('name', $data['location'])->firstOrFail();
+            $content = Content::findOrFail($data['content_id']);
+            $data['location'] = $content->name;
+
+            // Cek bentrok event
+            $conflict = Event::where('content_id', $data['content_id'])
+                ->where(function ($query) use ($data) {
+                    $query->where('start_date', '<=', $data['end_date'])
+                        ->where('end_date', '>=', $data['start_date']);
+                })->first();
+
+            if ($conflict) {
+                return redirect()->back()
+                    ->with('error', 'Tanggal yang dipilih bentrok dengan event lain: ' .
+                        $conflict->name_event . ' oleh ' . $conflict->vendor .
+                        ' (' . $conflict->start_date . ' s/d ' . $conflict->end_date . ')')
+                    ->withInput($request->except(['start_date', 'end_date']));
+            }
+
+            if ($request->hasFile('file')) {
+                $file = $request->file('file');
+                $rundownPath = $file->store('assets/rundowns', 'public_html_storage');
+                $data['file'] = $rundownPath;
+            }
+
+            Event::create($data);
+
+            Activity::create([
+                'admin_id'    => auth('admin')->id(),
+                'description' => 'menambahkan jadwal event baru.',
+            ]);
+
+            return redirect()->route('event.index')->with('success', 'Data berhasil ditambahkan.');
+        } catch (\Exception $e) {
+            return back()
+                ->withInput()
+                ->with('error', 'Terjadi kesalahan saat menambahkan event: ' . $e->getMessage());
+        }
+    }
+
+    public function edit($id)
+    {
+        $event = Event::findOrFail($id);
+        $contents = Content::all();
+        return view('admin.event.edit', compact('event', 'contents'));
+    }
+
+    public function update(Request $request, Event $event)
+    {
+        try {
+            $data = $request->validate([
+                'content_id' => 'required|exists:content,id',
+                'vendor'     => 'required|string|max:255',
+                'start_date' => 'required|date',
+                'end_date'   => 'required|date|after_or_equal:start_date',
+                'name_event' => 'required|string|max:255',
+                'file'       => 'nullable|file|mimes:pdf|max:2048',
+            ]);
+
+            $content = Content::findOrFail($data['content_id']);
+            $data['location'] = $content->name;
 
             // Cek bentrok event (abaikan event saat ini)
             $conflict = Event::where('id', '!=', $event->id)
+                ->where('content_id', $data['content_id'])
                 ->where(function ($query) use ($data) {
                     $query->where('start_date', '<=', $data['end_date'])
                         ->where('end_date', '>=', $data['start_date']);
